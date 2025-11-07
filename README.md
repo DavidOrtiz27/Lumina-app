@@ -1,50 +1,144 @@
-# Welcome to your Expo app 👋
+# 📱 Lumina App - Sistema de Gestión de Equipos
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> **Aplicación React Native/Expo para gestión y monitoreo de equipos con sistema de autenticación completo**
 
-## Get started
+## 🏗️ **Arquitectura del Proyecto**
 
-1. Install dependencies
+### **Tecnologías Principales**
+- **Framework**: React Native + Expo (v54.0.22)
+- **Lenguaje**: TypeScript
+- **Navegación**: Expo Router (file-based routing)
+- **Estado**: Zustand para autenticación
+- **UI**: Components personalizados + Theming
+- **Iconos**: Expo Vector Icons
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+### **Estructura del Código**
+```
+Lumina-app/
+├── app/                          # Expo Router (Navegación)
+│   ├── (limna-app)/             # Rutas protegidas
+│   │   ├── (home)/              # Dashboard principal
+│   │   ├── history/             # Historial de movimientos
+│   │   └── qr/                  # Código QR y detalles
+│   ├── auth/                    # Autenticación
+│   │   ├── login/               # Login
+│   │   └── recovery/            # Recuperación de contraseña
+│   └── _layout.tsx              # Layout principal
+├── presentation/                # Capa de presentación modular
+│   ├── auth/                    # Módulo de autenticación
+│   │   ├── components/          # Componentes de auth
+│   │   ├── hooks/               # Custom hooks
+│   │   └── store/               # Zustand store
+│   ├── history/                 # Módulo de historial
+│   │   ├── components/          # Componentes modulares
+│   │   ├── data/                # Datos mock
+│   │   ├── types/               # Interfaces TypeScript
+│   │   └── utils/               # Utilidades de filtrado
+│   ├── home/                    # Módulo principal
+│   │   ├── components/          # Componentes del home
+│   │   └── data/                # Datos de equipos
+│   ├── qr/                      # Módulo QR
+│   │   └── components/          # Vistas QR modulares
+│   └── theme/                   # Sistema de theming
+├── core/                        # Lógica de negocio
+│   └── auth/                    # API y storage
+└── constants/                   # Constantes globales
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## 🚀 **Comandos de Desarrollo**
 
-To learn more about developing your project with Expo, look at the following resources:
+### **Instalación y Ejecución**
+```bash
+# Instalar dependencias
+npm install
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Iniciar servidor de desarrollo
+npm start
+# o
+npx expo start
+```
 
-## Join the community
+### **Plataformas Soportadas**
+- 📱 **Android** (emulador/dispositivo)
+- 🍎 **iOS** (simulador/dispositivo) 
+- 🌐 **Web** (navegador)
+- 📲 **Expo Go** (para testing rápido)
 
-Join our community of developers creating universal apps.
+---
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 🔐 **Sistema de Autenticación**
+
+### **Funcionalidades Completadas**
+- ✅ **Login** con email y contraseña
+- ✅ **Persistencia de sesión** con AsyncStorage
+- ✅ **Logout seguro** con limpieza de datos
+- ✅ **Recuperación de contraseña**
+- ✅ **Validación visual** estilo Facebook/Instagram
+- ✅ **Alertas personalizadas** con iconos y colores
+
+### **Credenciales de Prueba**
+```
+Email: test@example.com
+Password: password123
+```
+
+---
+
+## 📊 **Funcionalidades Principales**
+
+### **🏠 Dashboard**
+- Lista de equipos disponibles
+- Cards informativas con imágenes
+- Navegación a código QR
+
+### **📱 Sistema QR** 
+- Código QR generado dinámicamente
+- Vista de detalles del equipo
+- Navegación fluida entre vistas
+
+### **📋 Historial Modular**
+- Tabs separados: Ingreso y Egreso
+- Filtros por período: Día, Semana, Mes, Todos
+- Cards detalladas con fecha, hora y ubicación
+- Sin estados ni contadores (diseño limpio)
+
+### **🎨 Theming**
+- Soporte tema claro/oscuro automático
+- Colores consistentes en toda la app
+- Componentes themed (ThemedView, ThemedText)
+
+---
+
+## 📋 **Estado del Proyecto**
+
+### **✅ Completado**
+- [x] Sistema de autenticación completo
+- [x] Alertas personalizadas elegantes
+- [x] Validación visual avanzada
+- [x] Historial modular con tabs y filtros
+- [x] Dashboard principal operativo
+- [x] Sistema QR funcional
+- [x] Arquitectura modular implementada
+- [x] Theming completo
+
+### **📅 Próximas Funcionalidades**
+- [ ] Integración con backend real
+- [ ] Push notifications
+- [ ] Sincronización offline
+- [ ] Pruebas unitarias
+
+---
+
+## 📚 **Documentación Técnica**
+
+Para documentación técnica detallada sobre cada módulo, consultar:
+- **Autenticación**: Implementación completa con Zustand + AsyncStorage
+- **Alertas**: Sistema de alertas personalizadas con tipos y animaciones  
+- **Historial**: Arquitectura modular con componentes reutilizables
+- **Testing**: Servidor Express simple para pruebas de API
+
+---
+
+**Desarrollado con ❤️ usando React Native + Expo**
