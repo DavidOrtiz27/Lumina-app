@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/theme'
-import { useColorScheme } from '@/hooks/use-color-scheme'
+import { useTheme } from '@/hooks/use-theme'
 import { ProtectedRoute } from '@/presentation/auth/components'
 import { useAuthStore } from '@/presentation/auth/store/useAuthStore'
 import { useDrawer } from '@/presentation/navigation/hooks/useDrawer'
@@ -11,75 +11,29 @@ import { Alert, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 const SettingsScreen = () => {
-  const colorScheme = useColorScheme()
-  const colors = Colors[colorScheme ?? 'light']
-  const { user } = useAuthStore()
+  const { colorScheme, themeMode, setLightMode, setDarkMode, setSystemMode, isDark } = useTheme()
+  const colors = Colors[colorScheme]
   const { openDrawer } = useDrawer()
 
   // Estados para configuraciones
   const [notifications, setNotifications] = useState(true)
-  const [biometric, setBiometric] = useState(false)
-  const [darkMode, setDarkMode] = useState(colorScheme === 'dark')
-  const [autoSync, setAutoSync] = useState(true)
 
   const handleNotificationChange = (value: boolean) => {
     setNotifications(value)
     // Aquí implementarías la lógica para guardar la configuración
   }
 
-  const handleBiometricChange = (value: boolean) => {
-    setBiometric(value)
-    // Aquí implementarías la lógica para configurar biométricos
+  const handleThemeChange = () => {
+    // Ciclar entre los modos: light → dark → system
+    if (themeMode === 'light') {
+      setDarkMode()
+    } else if (themeMode === 'dark') {
+      setSystemMode()
+    } else {
+      setLightMode()
+    }
   }
 
-  const handleDarkModeChange = (value: boolean) => {
-    setDarkMode(value)
-    // Aquí implementarías la lógica para cambiar el tema
-  }
-
-  const handleAutoSyncChange = (value: boolean) => {
-    setAutoSync(value)
-    // Aquí implementarías la lógica para configurar sincronización
-  }
-
-  const handleClearCache = () => {
-    Alert.alert(
-      'Limpiar Cache',
-      '¿Estás seguro de que quieres limpiar el cache de la aplicación?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Limpiar', 
-          style: 'destructive',
-          onPress: () => {
-            // Implementar lógica para limpiar cache
-            Alert.alert('Cache limpiado', 'El cache se ha limpiado correctamente')
-          }
-        }
-      ]
-    )
-  }
-
-  const handleResetSettings = () => {
-    Alert.alert(
-      'Resetear Configuración',
-      '¿Estás seguro de que quieres resetear toda la configuración a valores por defecto?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Resetear', 
-          style: 'destructive',
-          onPress: () => {
-            setNotifications(true)
-            setBiometric(false)
-            setDarkMode(false)
-            setAutoSync(true)
-            Alert.alert('Configuración reseteada', 'La configuración se ha reseteado correctamente')
-          }
-        }
-      ]
-    )
-  }
 
   const SettingItem = ({ 
     icon, 
@@ -186,89 +140,41 @@ const SettingsScreen = () => {
                 onValueChange={handleNotificationChange}
               />
 
-              <SettingItem
-                icon="finger-print"
-                title="Autenticación Biométrica"
-                description="Usar huella dactilar o Face ID"
-                value={biometric}
-                onValueChange={handleBiometricChange}
-              />
-
-              <SettingItem
-                icon="moon"
-                title="Modo Oscuro"
-                description="Activar tema oscuro de la aplicación"
-                value={darkMode}
-                onValueChange={handleDarkModeChange}
-              />
-
-              <SettingItem
-                icon="sync"
-                title="Sincronización Automática"
-                description="Sincronizar datos automáticamente"
-                value={autoSync}
-                onValueChange={handleAutoSyncChange}
-              />
-            </View>
-
-            {/* Sección de Aplicación */}
-            <View style={styles.section}>
-              <ThemedText type="h3" style={styles.sectionTitle}>
-                Aplicación
-              </ThemedText>
-
-              <ActionButton
-                icon="trash"
-                title="Limpiar Cache"
-                description="Eliminar datos temporales"
-                onPress={handleClearCache}
-                color={colors.secondary}
-              />
-
-              <ActionButton
-                icon="refresh"
-                title="Resetear Configuración"
-                description="Restaurar valores por defecto"
-                onPress={handleResetSettings}
-                color={colors.destructive}
-              />
-            </View>
-
-            {/* Información de la App */}
-            <View style={[styles.infoSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <ThemedText type="h3" style={styles.sectionTitle}>
-                Información de la Aplicación
-              </ThemedText>
-              
-              <View style={styles.infoRow}>
-                <ThemedText type="body2" style={[styles.infoLabel, { color: colors.icon }]}>
-                  Versión:
-                </ThemedText>
-                <ThemedText type="body2" style={styles.infoValue}>
-                  1.0.0
-                </ThemedText>
-              </View>
-
-              <View style={styles.infoRow}>
-                <ThemedText type="body2" style={[styles.infoLabel, { color: colors.icon }]}>
-                  Build:
-                </ThemedText>
-                <ThemedText type="body2" style={styles.infoValue}>
-                  2025.11.07
-                </ThemedText>
-              </View>
-
-              <View style={styles.infoRow}>
-                <ThemedText type="body2" style={[styles.infoLabel, { color: colors.icon }]}>
-                  Usuario:
-                </ThemedText>
-                <ThemedText type="body2" style={styles.infoValue}>
-                  {user?.fullName || 'No disponible'}
-                </ThemedText>
+              {/* Selector de Tema Personalizado */}
+              <View style={[styles.settingItem, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={styles.settingLeft}>
+                  <Ionicons name="color-palette" size={20} color={colors.primary} />
+                  <View style={styles.settingInfo}>
+                    <ThemedText type="body1" style={styles.settingTitle}>
+                      Tema de la aplicación
+                    </ThemedText>
+                    <ThemedText type="body2" style={[styles.settingDescription, { color: colors.icon }]}>
+                      {themeMode === 'light' ? 'Tema claro' : 
+                       themeMode === 'dark' ? 'Tema oscuro' : 
+                       'Automático (del sistema)'}
+                    </ThemedText>
+                  </View>
+                </View>
+                <TouchableOpacity 
+                  style={[styles.themeButton, { backgroundColor: colors.background, borderColor: colors.border }]}
+                  onPress={handleThemeChange}
+                >
+                  <Ionicons 
+                    name={themeMode === 'light' ? 'sunny' : 
+                          themeMode === 'dark' ? 'moon' : 
+                          'phone-portrait'} 
+                    size={18} 
+                    color={colors.primary} 
+                  />
+                  <ThemedText type="body2" style={styles.themeButtonText}>
+                    {themeMode === 'light' ? 'Claro' : 
+                     themeMode === 'dark' ? 'Oscuro' : 
+                     'Auto'}
+                  </ThemedText>
+                </TouchableOpacity>
               </View>
             </View>
-
-            <View style={styles.bottomSpacing} />
+            
           </ScrollView>
         </SafeAreaView>
       </ThemedView>
@@ -384,6 +290,19 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 40,
+  },
+  themeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 6,
+  },
+  themeButtonText: {
+    fontFamily: 'Poppins-Medium',
+    fontSize: 12,
   },
 })
 

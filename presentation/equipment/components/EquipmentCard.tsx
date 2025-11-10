@@ -3,6 +3,7 @@ import { useThemeColor } from '@/hooks/use-theme-color'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import React from 'react'
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
+import QRCode from 'react-native-qrcode-svg'
 
 interface EquipmentCardProps {
   equipment: Equipment
@@ -35,13 +36,19 @@ export const EquipmentCard = ({ equipment, onPress }: EquipmentCardProps) => {
         </ThemedText>
         <ThemedText type="body2" style={[styles.equipmentSerial, { color: textColor, opacity: 0.7 }]}>
           Serial: {equipment.serial}
+          
         </ThemedText>
       </View>
 
       {/* QR Code Placeholder - Derecha */}
       <View style={styles.qrContainer}>
-        <View style={[styles.qrPlaceholder, { borderColor: textColor, opacity: 0.3 }]}>
-          <ThemedText type="caption" style={{ opacity: 0.5 }}>QR</ThemedText>
+        <View style={[styles.qrPlaceholder, { borderColor: textColor}]}>
+         <QRCode
+            value={equipment.qrData}
+            size={60}
+            color={textColor}
+            backgroundColor={backgroundColor}
+          />
         </View>
       </View>
     </TouchableOpacity>

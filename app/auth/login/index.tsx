@@ -4,6 +4,7 @@ import { PublicOnlyRoute } from '@/presentation/auth/components'
 import { useAuthStore } from '@/presentation/auth/store/useAuthStore'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { ThemedView } from '@/presentation/theme/components/themed-view'
+import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import React, { useState } from 'react'
 import {
@@ -146,6 +147,15 @@ const LoginScreen = () => {
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
+            {/* Logo SVG */}
+            <View style={styles.logoContainer}>
+              <Image 
+                source={require('@/assets/images/lumina.svg')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+            
             <ThemedText type="h1" style={styles.title}>
               LUMINA
             </ThemedText>
@@ -252,7 +262,7 @@ const LoginScreen = () => {
               </View>
             </View>
           </View>
-        </ScrollView>
+        </ScrollView> 
       </KeyboardAvoidingView>
     </ThemedView>
     </PublicOnlyRoute>
@@ -276,7 +286,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 32,
   },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  logo: {
+    width: 180,
+    height: 180,
+  },
   title: {
+    fontSize: 40,
     textAlign: 'center',
     marginBottom: 8,
   },
