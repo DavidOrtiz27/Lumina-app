@@ -1,11 +1,5 @@
-export interface EquipmentData {
-  id: string
-  name: string
-  serial: string
-  brand: string
-  color: string
-  imageUrl: string
-  qrData: string
-}
+import { Equipment } from '@/core/equipment/interface/equipment'
+
+export type EquipmentData = Equipment
 
 export type QRViewType = 'main' | 'details'

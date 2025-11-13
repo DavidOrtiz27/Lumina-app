@@ -6,14 +6,14 @@ import { StorageAdapter } from '../storage/StorageAdapter';
 const getBaseURL = () => {
   if (__DEV__) {
     if (Platform.OS === 'android') {
-      // Para emulador Android, usar 10.0.2.2 que mapea al localhost de la máquina host
-      return 'http://10.0.2.2:3000/api';
+      // Para emulador Android, usar 192.168.1.11 que mapea al localhost de la máquina host
+      return 'http://10.2.234.180:8000/api';
     } else if (Platform.OS === 'ios') {
       // Para simulador iOS, localhost funciona
-      return 'http://localhost:3000/api';
+      return 'http://localhost:8000/api';
     } else {
       // Para web
-      return 'http://localhost:3000/api';
+      return 'http://localhost:8000/api';
     }
   } else {
     // Para producción, usar tu URL de producción

@@ -1,9 +1,10 @@
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { useEquipmentQR } from '@/presentation/equipment/hooks/useEquipmentQR'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Image, StyleSheet, TouchableOpacity, View } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
 import type { EquipmentData } from '../types'
 
@@ -15,24 +16,43 @@ interface QRMainViewProps {
 export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInfo }) => {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
+  
+  // Usar el hook para generar el QR con hash SHA-256
+  const { qrContent, isGenerating, error } = useEquipmentQR(equipmentData)
 
   return (
     <View style={styles.content}>
       <View style={styles.qrSection}>
         <ThemedText type="h2" style={styles.title}>
-          {equipmentData.name}
+          {equipmentData.tipo_elemento}
         </ThemedText>
         <ThemedText type="body1" style={styles.subtitle}>
           Código QR del Equipo
         </ThemedText>
 
         <View style={[styles.qrContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <QRCode
-            value={equipmentData.qrData}
-            size={240}
-            color={colors.text}
-            backgroundColor={colors.card}
-          />
+          {isGenerating || !qrContent ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <ThemedText type="body2" style={styles.loadingText}>
+                Generando QR...
+              </ThemedText>
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={48} color={colors.destructive} />
+              <ThemedText type="body2" style={[styles.errorText, { color: colors.destructive }]}>
+                {error}
+              </ThemedText>
+            </View>
+          ) : (
+            <QRCode
+              value={qrContent || 'Loading...'}
+              size={240}
+              color={colors.text}
+              backgroundColor={colors.card}
+            />
+          )}
         </View>
       </View>
 
@@ -40,7 +60,7 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
         <View style={[styles.equipmentCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.equipmentImageContainer}>
             <Image
-              source={{ uri: equipmentData.imageUrl }}
+              source={{ uri: equipmentData.path_foto_equipo_implemento }}
               style={styles.equipmentImage}
               resizeMode="cover"
             />
@@ -53,7 +73,7 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
                 Tipo:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.name}
+                {equipmentData.tipo_elemento}
               </ThemedText>
             </View>
 
@@ -63,7 +83,7 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
                 Marca:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.brand}
+                {equipmentData.marca}
               </ThemedText>
             </View>
 
@@ -83,7 +103,7 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
                 N° Serial:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.serial}
+                {equipmentData.sn_equipo}
               </ThemedText>
             </View>
           </View>
@@ -140,6 +160,26 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
+    minHeight: 300,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontFamily: 'Poppins-Regular',
+    fontSize: 14,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorText: {
+    marginTop: 12,
+    fontFamily: 'Poppins-Regular',
+    fontSize: 14,
+    textAlign: 'center',
   },
   equipmentSection: {
     flex: 1,

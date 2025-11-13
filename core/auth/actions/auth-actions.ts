@@ -2,23 +2,20 @@ import luminaApi from "../api/luminaApi";
 import { User } from "../interface/user";
 import { StorageAdapter } from "../storage/StorageAdapter";
 
-export interface AuthResponse {
-    id:       string;
-    email:    string;
-    fullName: string;
-    isActive: boolean;
-    roles:    string[];
-    token:    string;
+export interface LoginResponse {
+    success: boolean;
+    message: string;
+    data: {
+        user: User;
+        token: string;
+        token_type: string;
+    }
 }
 
 
-const returnUserToken = (data: AuthResponse):{user:User, token:string} => {
-    /* const { id,email, fullName, isActive, roles, token } = data; */
-
-    const {token, ...user} = data;
-
-    return {user, token};
-
+const returnUserToken = (data: LoginResponse):{user:User, token:string} => {
+    const { user, token } = data.data;
+    return { user, token };
 }
 
 
@@ -34,8 +31,10 @@ export const authLogin = async (email: string, password: string): Promise<{user:
     email = email.toLowerCase()
 
     try {
-        const {data} = await luminaApi.post<AuthResponse>('/auth/login', {email, password});
-        const result = returnUserToken(data);
+        const response = await luminaApi.post<LoginResponse>('/auth/login', {email, password});
+        
+        // La respuesta tiene la estructura: { success: true, message: "...", data: { user: {...}, token: "...", token_type: "Bearer" } }
+        const result = returnUserToken(response.data);
         
         // Guardar token y usuario en el almacenamiento persistente
         await StorageAdapter.setToken(result.token);
@@ -107,15 +106,10 @@ export const authCheckStatus = async () => {
             return null;
         }
 
-        // Verificamos con el servidor que el token sigue siendo válido
-        const {data} = await luminaApi.get<AuthResponse>('/auth/check-status');
-        const result = returnUserToken(data);
+        // Retornamos los datos guardados localmente para mantener la sesión
+        // El token seguirá siendo válido hasta que expire o se cierre sesión
+        return { user: storedUser, token: storedToken };
         
-        // Actualizamos los datos guardados por si hay cambios
-        await StorageAdapter.setToken(result.token);
-        await StorageAdapter.setUser(result.user);
-        
-        return result;
     } catch (error) {
         // Si hay error, limpiamos los datos guardados
         await StorageAdapter.clearAuthData();

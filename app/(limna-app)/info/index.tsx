@@ -7,7 +7,7 @@ import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { ThemedView } from '@/presentation/theme/components/themed-view'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
-import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 const InfoScreen = () => {
@@ -43,34 +43,30 @@ const InfoScreen = () => {
             {/* Profile Header */}
             <View style={[styles.profileHeader, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={styles.avatarSection}>
-                {user?.avatarUrl ? (
-                  <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
-                ) : (
-                  <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
-                    <Ionicons name="person" size={40} color="white" />
-                  </View>
-                )}
+                <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
+                  <Ionicons name="person" size={40} color="white" />
+                </View>
                 <View style={styles.profileInfo}>
                   <ThemedText type="h3" style={styles.fullName}>
-                    {user?.fullName || 'Usuario'}
+                    {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}
                   </ThemedText>
                   <ThemedText type="body2" style={[styles.userType, { color: colors.primary }]}>
-                    {user?.userType || 'Usuario'}
+                    {user?.role?.nombre_rol || 'Usuario'}
                   </ThemedText>
                   <View style={styles.statusBadge}>
                     <Ionicons 
-                      name={user?.isActive ? "checkmark-circle" : "close-circle"} 
+                      name="checkmark-circle" 
                       size={16} 
-                      color={user?.isActive ? colors.primary : colors.destructive} 
+                      color={colors.primary} 
                     />
                     <ThemedText 
                       type="body2" 
                       style={[
                         styles.statusText, 
-                        { color: user?.isActive ? colors.primary : colors.destructive }
+                        { color: colors.primary }
                       ]}
                     >
-                      {user?.isActive ? 'Activo' : 'Inactivo'}
+                      Activo
                     </ThemedText>
                   </View>
                 </View>
@@ -116,19 +112,19 @@ const InfoScreen = () => {
               <View style={styles.sectionHeader}>
                 <Ionicons name="shield-checkmark" size={24} color={colors.primary} />
                 <ThemedText type="h3" style={styles.sectionTitle}>
-                  Roles y Permisos
+                  Información Académica
                 </ThemedText>
               </View>
 
               <View style={styles.infoItem}>
                 <View style={styles.infoLabel}>
-                  <Ionicons name="people" size={16} color={colors.icon} />
+                  <Ionicons name="school" size={16} color={colors.icon} />
                   <ThemedText type="body2" style={styles.labelText}>
-                    Roles Asignados
+                    Programa de Formación
                   </ThemedText>
                 </View>
                 <ThemedText type="body1" style={styles.infoValue}>
-                  {user?.roles?.join(', ') || 'Sin roles asignados'}
+                  {user?.formacion?.nombre_programa || 'No disponible'}
                 </ThemedText>
               </View>
 
@@ -136,11 +132,11 @@ const InfoScreen = () => {
                 <View style={styles.infoLabel}>
                   <Ionicons name="key" size={16} color={colors.icon} />
                   <ThemedText type="body2" style={styles.labelText}>
-                    Tipo de Usuario
+                    Ficha
                   </ThemedText>
                 </View>
                 <ThemedText type="body1" style={styles.infoValue}>
-                  {user?.userType ? user.userType.charAt(0).toUpperCase() + user.userType.slice(1) : 'No especificado'}
+                  {user?.formacion?.ficha || 'No especificada'}
                 </ThemedText>
               </View>
             </View>

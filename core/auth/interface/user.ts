@@ -1,9 +1,23 @@
+export interface Role {
+    nombre_rol: string;
+}
+
+export interface Formacion {
+    ficha: string;
+    nombre_programa: string;
+}
+
 export interface User {
-    id: string;
+    id: number;
+    nombre: string;
+    apellido: string;
     email: string;
-    fullName: string;
-    isActive: boolean;
-    roles: string[];
-    avatarUrl?: string;
-    userType?: 'aprendiz' | 'instructor' | 'coordinador' | 'admin';
+    documento: string;
+    role: Role;
+    formacion: Formacion;
+}
+
+export interface userQR {
+    nombre: string;
+    documento: string;
 }

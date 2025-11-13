@@ -11,17 +11,11 @@ interface EquipmentListProps {
 
 export const EquipmentList: React.FC<EquipmentListProps> = ({ equipments }) => {
   const handleEquipmentPress = (equipment: Equipment) => {
-    console.log('Navegando a QR para:', equipment.name)
+    console.log('Navegando a QR para:', equipment.tipo_elemento)
     router.push({
       pathname: '/(limna-app)/qr',
       params: {
-        equipmentId: equipment.id,
-        equipmentName: equipment.name,
-        equipmentSerial: equipment.serial,
-        equipmentBrand: equipment.brand || '',
-        equipmentColor: equipment.color || '',
-        equipmentImage: equipment.imageUrl,
-        equipmentQrData: equipment.qrData
+        equipmentData: JSON.stringify(equipment)
       }
     })
   }

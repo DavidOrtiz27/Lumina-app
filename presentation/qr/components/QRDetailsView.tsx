@@ -39,11 +39,11 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
         {/* Imagen del Equipo en Vista Detallada */}
         <View style={styles.detailsImageSection}>
           <ThemedText type="h3" style={[styles.imageSectionTitle, { color: colors.text }]}>
-            {equipmentData.name}
+            {equipmentData.tipo_elemento}
           </ThemedText>
           <View style={[styles.detailsImageCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Image
-              source={{ uri: equipmentData.imageUrl }}
+              source={{ uri: equipmentData.path_foto_equipo_implemento }}
               style={styles.detailsEquipmentImage}
               resizeMode="cover"
             />
@@ -63,7 +63,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
                 Tipo:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.name}
+                {equipmentData.tipo_elemento}
               </ThemedText>
             </View>
 
@@ -73,7 +73,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
                 Marca:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.brand}
+                {equipmentData.marca}
               </ThemedText>
             </View>
 
@@ -93,46 +93,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
                 N° Serial:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.serial}
-              </ThemedText>
-            </View>
-          </View>
-        </View>
-
-        {/* Elementos Adicionales */}
-        <View style={[styles.detailsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <ThemedText type="h3" style={[styles.sectionTitle, { color: colors.text }]}>
-            Elementos Adicionales
-          </ThemedText>
-          
-          <View style={styles.detailsContent}>
-            <View style={styles.equipmentRow}>
-              <Ionicons name="location" size={20} color={colors.primary} />
-              <ThemedText type="body1" style={styles.equipmentLabel}>
-                Ubicación:
-              </ThemedText>
-              <ThemedText type="body1" style={styles.equipmentValue}>
-                Oficina Principal
-              </ThemedText>
-            </View>
-
-            <View style={styles.equipmentRow}>
-              <Ionicons name="calendar" size={20} color={colors.primary} />
-              <ThemedText type="body1" style={styles.equipmentLabel}>
-                Última actualización:
-              </ThemedText>
-              <ThemedText type="body1" style={styles.equipmentValue}>
-                {new Date().toLocaleDateString()}
-              </ThemedText>
-            </View>
-
-            <View style={styles.equipmentRow}>
-              <Ionicons name="construct" size={20} color={colors.primary} />
-              <ThemedText type="body1" style={styles.equipmentLabel}>
-                Estado:
-              </ThemedText>
-              <ThemedText type="body1" style={styles.equipmentValue}>
-                Operativo
+                {equipmentData.sn_equipo}
               </ThemedText>
             </View>
 
@@ -141,32 +102,46 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
               <ThemedText type="body1" style={styles.equipmentLabel}>
                 Descripción:
               </ThemedText>
-              <ThemedText type="body1" style={styles.equipmentValue}>
-                Equipo corporativo para uso administrativo
-              </ThemedText>
-            </View>
-
-            <View style={styles.equipmentRow}>
-              <Ionicons name="person" size={20} color={colors.primary} />
-              <ThemedText type="body1" style={styles.equipmentLabel}>
-                Responsable:
-              </ThemedText>
-              <ThemedText type="body1" style={styles.equipmentValue}>
-                Área de TI
-              </ThemedText>
-            </View>
-
-            <View style={styles.equipmentRow}>
-              <Ionicons name="time" size={20} color={colors.primary} />
-              <ThemedText type="body1" style={styles.equipmentLabel}>
-                Fecha de registro:
-              </ThemedText>
-              <ThemedText type="body1" style={styles.equipmentValue}>
-                15/10/2024
+              <ThemedText type="body1" style={[styles.equipmentValue, { flex: 1, flexWrap: 'wrap' }]}>
+                {equipmentData.descripcion}
               </ThemedText>
             </View>
           </View>
         </View>
+
+        {/* Elementos Adicionales */}
+        {equipmentData.elementos_adicionales && equipmentData.elementos_adicionales.length > 0 && (
+          <View style={[styles.detailsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <ThemedText type="h3" style={[styles.sectionTitle, { color: colors.text }]}>
+              Elementos Adicionales ({equipmentData.elementos_adicionales.length})
+            </ThemedText>
+            
+            <View style={styles.detailsContent}>
+              {equipmentData.elementos_adicionales.map((elemento, index) => (
+                <View key={elemento.id} style={styles.elementoAdicionalContainer}>
+                  <View style={styles.elementoHeader}>
+                    <Ionicons name="cube-outline" size={20} color={colors.primary} />
+                    <ThemedText type="body1" style={[styles.elementoTitle, { color: colors.text }]}>
+                      {elemento.nombre_elemento}
+                    </ThemedText>
+                  </View>
+                  
+                  <View style={styles.elementoImageContainer}>
+                    <Image
+                      source={{ uri: elemento.path_foto_elemento }}
+                      style={styles.elementoImage}
+                      resizeMode="cover"
+                    />
+                  </View>
+                  
+                  {index < equipmentData.elementos_adicionales.length - 1 && (
+                    <View style={[styles.elementoDivider, { backgroundColor: colors.border }]} />
+                  )}
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
       </ScrollView>
     </View>
   )
@@ -279,5 +254,33 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-SemiBold',
     fontSize: 14,
     flex: 1,
+  },
+  elementoAdicionalContainer: {
+    marginVertical: 8,
+  },
+  elementoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  elementoTitle: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 15,
+    marginLeft: 8,
+    flex: 1,
+  },
+  elementoImageContainer: {
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  elementoImage: {
+    width: 140,
+    height: 140,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+  },
+  elementoDivider: {
+    height: 1,
+    marginVertical: 12,
   },
 })

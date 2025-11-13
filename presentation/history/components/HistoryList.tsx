@@ -47,7 +47,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({
     <FlatList
       data={entries}
       renderItem={renderItem}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.id.toString()}
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={renderHeader}
       ListEmptyComponent={renderEmptyComponent}

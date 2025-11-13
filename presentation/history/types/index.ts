@@ -1,22 +1,10 @@
-export type FilterPeriod = 'dia' | 'semana' | 'mes' | 'all'
+import { Equipment } from '@/core/equipment/interface/equipment'
+
 export type TabType = 'ingreso' | 'egreso'
 
 export interface HistoryEntry {
-  id: string
-  type: 'ingreso' | 'egreso'
-  date: string
-  time: string
-  equipmentId: string
-  equipmentName: string
-  equipmentType: string
-  location?: string
-  additionalInfo?: string
-  equipmentImage?: string
-}
-
-export interface HistoryFilters {
-  period: FilterPeriod
-  searchText?: string
-  startDate?: Date
-  endDate?: Date
+  id: number
+  ingreso: string // "2024-11-12 07:35:00"
+  salida: string | null // "2024-11-11 17:45:00" o null si aún está en uso
+  equipo: Equipment
 }

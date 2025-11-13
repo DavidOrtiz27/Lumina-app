@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import React from 'react'
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { useThemeColor } from '../../../hooks/use-theme-color'
 import { useAuthStore } from '../../auth/store/useAuthStore'
 import { useDrawer } from '../hooks/useDrawer'
@@ -47,21 +47,18 @@ export const CustomDrawerContent = () => {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <View style={styles.avatarContainer}>
-          <Image
-            source={{
-              uri: user?.avatarUrl || 'https://via.placeholder.com/60x60.png?text=U'
-            }}
-            style={styles.avatar}
-          />
+          <View style={[styles.avatar, { backgroundColor: '#6366F1' }]}>
+            <Ionicons name="person" size={30} color="white" />
+          </View>
         </View>
         <Text style={[styles.userName, { color: textColor }]}>
-          {user?.fullName || 'Usuario'}
+          {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}
         </Text>
         <Text style={[styles.userEmail, { color: textColor }]}>
           {user?.email || 'usuario@email.com'}
         </Text>
         <Text style={[styles.userType, { color: textColor }]}>
-          {user?.userType || 'Usuario'}
+          {user?.role?.nombre_rol || 'Usuario'}
         </Text>
       </View>
 
@@ -116,6 +113,8 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     backgroundColor: '#E1E1E1',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   userName: {
     fontSize: 18,

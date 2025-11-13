@@ -20,24 +20,38 @@ const QRScreen = () => {
   
   // Obtener parámetros del equipo seleccionado
   const params = useLocalSearchParams<{
-    equipmentId?: string
-    equipmentName?: string
-    equipmentSerial?: string
-    equipmentBrand?: string
-    equipmentColor?: string
-    equipmentImage?: string
-    equipmentQrData?: string
+    equipmentData?: string
   }>()
 
-  // Valores por defecto si no hay parámetros (para compatibilidad)
-  const equipmentData: EquipmentData = {
-    id: params.equipmentId || 'default',
-    name: params.equipmentName || 'Equipo no seleccionado',
-    serial: params.equipmentSerial || 'N/A',
-    brand: params.equipmentBrand || 'N/A',
-    color: params.equipmentColor || 'N/A',
-    imageUrl: params.equipmentImage || 'https://via.placeholder.com/120x120/6B7280/FFFFFF?text=📦',
-    qrData: params.equipmentQrData || JSON.stringify({ message: 'No hay datos disponibles' })
+  // Parsear el objeto completo del equipo o usar valores por defecto
+  let equipmentData: EquipmentData
+  
+  try {
+    equipmentData = params.equipmentData 
+      ? JSON.parse(params.equipmentData as string)
+      : {
+          id: 0,
+          sn_equipo: 'N/A',
+          marca: 'N/A',
+          color: 'N/A',
+          tipo_elemento: 'Equipo no seleccionado',
+          descripcion: 'Sin descripción disponible',
+          qr_hash: 'NO_DATA',
+          path_foto_equipo_implemento: 'https://via.placeholder.com/120x120/6B7280/FFFFFF?text=📦',
+          elementos_adicionales: []
+        }
+  } catch {
+    equipmentData = {
+      id: 0,
+      sn_equipo: 'N/A',
+      marca: 'N/A',
+      color: 'N/A',
+      tipo_elemento: 'Equipo no seleccionado',
+      descripcion: 'Sin descripción disponible',
+      qr_hash: 'NO_DATA',
+      path_foto_equipo_implemento: 'https://via.placeholder.com/120x120/6B7280/FFFFFF?text=📦',
+      elementos_adicionales: []
+    }
   }
 
   return (

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { User } from '../interface/user';
 
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
@@ -54,7 +55,7 @@ export class StorageAdapter {
     await this.removeItem(TOKEN_KEY);
   }
 
-  static async getUser(): Promise<any | null> {
+  static async getUser(): Promise<User | null> {
     const userStr = await this.getItem(USER_KEY);
     if (userStr) {
       try {
@@ -67,7 +68,7 @@ export class StorageAdapter {
     return null;
   }
 
-  static async setUser(user: any): Promise<void> {
+  static async setUser(user: User): Promise<void> {
     await this.setItem(USER_KEY, JSON.stringify(user));
   }
 
