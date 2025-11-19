@@ -1,7 +1,6 @@
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useAuthStore } from '@/presentation/auth/store/useAuthStore'
-import { useNotifications } from '@/presentation/notifications/hooks/useNotifications'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { ThemedView } from '@/presentation/theme/components/themed-view'
 import { Redirect } from 'expo-router'
@@ -17,28 +16,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const colors = Colors[colorScheme ?? 'light']
   
   const { status, checkAuthStatus } = useAuthStore()
-  
-  // Inicializar sistema de notificaciones push solo cuando esté autenticado
-  const { expoPushToken, notification } = useNotifications(status === 'authenticated')
 
   useEffect(() => {
     checkAuthStatus()
   }, [])
-  
-  // Log cuando se registra el push token
-  useEffect(() => {
-    if (expoPushToken && status === 'authenticated') {
-      console.log('✅ Push notifications configuradas correctamente');
-      console.log('📱 Token:', expoPushToken);
-    }
-  }, [expoPushToken, status])
-  
-  // Log cuando llega una notificación
-  useEffect(() => {
-    if (notification) {
-      console.log('🔔 Nueva notificación recibida en AuthProvider:', notification);
-    }
-  }, [notification])
 
   if (status === 'checking') {
     return (
