@@ -33,7 +33,8 @@ export const generateEquipmentHash = async (equipment: EquipmentQR, user: userQR
   }
 };
 
-/**
+/**we
+ * 
  * Verifica si un hash SHA-256 coincide con la información del equipo y usuario
  * 
  * @param hash - Hash SHA-256 a verificar

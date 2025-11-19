@@ -29,7 +29,7 @@ const HomeScreen = () => {
 
           {isError && error && (
             <View style={styles.errorContainer}>
-              <ThemedText style={styles.errorText}>❌ {error.message}</ThemedText>
+              <ThemedText style={styles.errorText}> {error.message}</ThemedText>
               <ThemedText 
                 style={[styles.retryText, { color: colors.primary }]}
                 onPress={refresh}

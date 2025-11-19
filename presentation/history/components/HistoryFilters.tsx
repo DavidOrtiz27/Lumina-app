@@ -23,12 +23,14 @@ export const HistoryFilters: React.FC<HistoryFiltersProps> = ({
     // Parsear la fecha correctamente para evitar problemas de zona horaria
     const [year, month, day] = dateString.split('-').map(Number)
     const date = new Date(year, month - 1, day)
-    return date.toLocaleDateString('es-ES', {
+    const formatted = date.toLocaleDateString('es-ES', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
       year: 'numeric'
     })
+    console.log(`📅 formatDisplayDate: "${dateString}" → "${formatted}"`);
+    return formatted
   }
 
   const handleDateChange = (event: any, date?: Date) => {
@@ -37,11 +39,15 @@ export const HistoryFilters: React.FC<HistoryFiltersProps> = ({
     }
     
     if (event.type === 'set' && date) {
-      // Formatear fecha a YYYY-MM-DD
+      // Formatear fecha a YYYY-MM-DD con padding correcto
       const year = date.getFullYear()
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const day = String(date.getDate()).padStart(2, '0')
       const dateString = `${year}-${month}-${day}`
+      
+      console.log('📅 Fecha seleccionada en picker:', dateString);
+      console.log('📅 Objeto Date:', date.toISOString());
+      
       onDateChange(dateString)
     } else if (event.type === 'dismissed') {
       setShowDatePicker(false)

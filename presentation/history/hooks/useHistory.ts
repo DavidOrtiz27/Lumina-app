@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/presentation/auth/store/useAuthStore';
 import { useEffect } from 'react';
 import { useHistoryStore } from '../store/useHistoryStore';
 
@@ -6,13 +7,19 @@ import { useHistoryStore } from '../store/useHistoryStore';
  */
 export const useHistory = () => {
   const { history, status, error, loadHistory, refreshHistory } = useHistoryStore();
+  const { status: authStatus } = useAuthStore();
 
   useEffect(() => {
+    // Solo cargar historial si el usuario está autenticado
+    if (authStatus !== 'authenticated') {
+      return;
+    }
+
     // Load history on mount if not already loaded
     if (status === 'idle') {
       loadHistory();
     }
-  }, [status, loadHistory]);
+  }, [status, authStatus, loadHistory]);
 
   return {
     history,

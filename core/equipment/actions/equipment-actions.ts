@@ -49,7 +49,7 @@ export const getMyEquipments = async (): Promise<Equipment[] | EquipmentError> =
         } else {
             return {
                 type: 'UNKNOWN_ERROR',
-                message: 'Ocurrió un error inesperado al obtener los equipos.',
+                message: 'Asegurate de tener equipos o elementos registrados.',
                 originalError: error
             };
         }

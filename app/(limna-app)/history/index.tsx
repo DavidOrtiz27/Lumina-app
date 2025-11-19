@@ -21,6 +21,11 @@ const HistoryScreen = () => {
   const { history, isLoading, isError, error, isEmpty, refresh } = useHistory()
 
   const filteredEntries = useMemo(() => {
+    console.log('🔄 Recalculando filtros...');
+    console.log('📅 Fecha seleccionada:', selectedDate);
+    console.log('📑 Tab activo:', activeTab);
+    console.log('📊 Total de registros:', history.length);
+    
     if (!history.length) return []
     
     // Filtrar por tab (ingreso/egreso)
@@ -33,9 +38,18 @@ const HistoryScreen = () => {
       }
     })
     
+    console.log('📊 Después de filtro por tab:', tabFiltered.length);
+    
     // Filtrar por fecha específica
     const dateFiltered = filterEntriesByDate(tabFiltered, selectedDate)
-    return sortEntriesByDate(dateFiltered)
+    
+    console.log('📊 Después de filtro por fecha:', dateFiltered.length);
+    
+    const sorted = sortEntriesByDate(dateFiltered);
+    
+    console.log('✅ Resultados finales:', sorted.length);
+    
+    return sorted;
   }, [history, selectedDate, activeTab])
 
   if (isLoading) {
