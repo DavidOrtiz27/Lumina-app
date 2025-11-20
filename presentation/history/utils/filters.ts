@@ -16,26 +16,19 @@ export const filterEntriesByDate = (
   console.log('📊 Total de entradas antes de filtrar:', entries.length);
 
   const filtered = entries.filter(entry => {
-    // entry.ingreso puede estar en formato:
-    // - "YYYY-MM-DD HH:MM:SS" (formato antiguo)
-    // - "YYYY-MM-DDTHH:MM:SS.000000Z" (formato ISO 8601 del backend Laravel)
     if (!entry.ingreso || typeof entry.ingreso !== 'string') {
       console.log('⚠️ Entrada sin fecha válida:', entry);
       return false;
     }
     
-    // Normalizar fecha del backend a Date object
-    // Esto maneja ambos formatos automáticamente
     const entryDate = new Date(entry.ingreso);
     
-    // Validar que la fecha sea válida
     if (isNaN(entryDate.getTime())) {
       console.log('⚠️ Formato de fecha inválido:', entry.ingreso);
       return false;
     }
     
-    // Extraer solo la parte de fecha (YYYY-MM-DD) en zona horaria local
-    const entryDateStr = entryDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+    const entryDateStr = entryDate.toISOString().split('T')[0];
     const filterDate = selectedDate.trim();
     
     const matches = entryDateStr === filterDate;
@@ -48,7 +41,53 @@ export const filterEntriesByDate = (
   });
 
   console.log('📊 Total de entradas después de filtrar:', filtered.length);
-  
+  return filtered;
+}
+
+/**
+ * Filtra entradas por rango de fechas
+ * Si solo hay fecha inicio, muestra desde esa fecha en adelante
+ * Si solo hay fecha fin, muestra hasta esa fecha
+ */
+export const filterEntriesByDateRange = (
+  entries: HistoryEntry[],
+  startDate: string | null,
+  endDate: string | null
+): HistoryEntry[] => {
+  if (!startDate && !endDate) {
+    return entries
+  }
+
+  console.log('🔍 Filtrando por rango:', startDate, '-', endDate);
+  console.log('📊 Total de entradas antes de filtrar:', entries.length);
+
+  const filtered = entries.filter(entry => {
+    if (!entry.ingreso || typeof entry.ingreso !== 'string') {
+      return false;
+    }
+    
+    const entryDate = new Date(entry.ingreso);
+    
+    if (isNaN(entryDate.getTime())) {
+      return false;
+    }
+    
+    const entryDateStr = entryDate.toISOString().split('T')[0];
+    
+    // Si hay fecha inicio, la entrada debe ser >= startDate
+    if (startDate && entryDateStr < startDate) {
+      return false;
+    }
+    
+    // Si hay fecha fin, la entrada debe ser <= endDate
+    if (endDate && entryDateStr > endDate) {
+      return false;
+    }
+    
+    return true;
+  });
+
+  console.log('📊 Total de entradas después de filtrar:', filtered.length);
   return filtered;
 }
 

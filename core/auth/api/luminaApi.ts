@@ -3,12 +3,16 @@ import { Platform } from 'react-native';
 import { StorageAdapter } from '../storage/StorageAdapter';
 
 // 🔥 CONFIGURACIÓN DEL SERVIDOR
+const USE_LOCAL = false; // Cambia a true para usar servidor local
+
+const LOCAL_URL = 'http://10.0.2.2:8000'; // Para emulador Android (localhost)
 const PRODUCTION_URL = 'https://lumina-testing.onrender.com'; // Servidor de producción
 
 // Función para obtener la URL base
 const getBaseURL = () => {
-  const url = `${PRODUCTION_URL}/api`;
-  console.log(`🔗 [${Platform.OS}] Servidor: ${url}`);
+  const baseUrl = USE_LOCAL ? LOCAL_URL : PRODUCTION_URL;
+  const url = `${baseUrl}/api`;
+  console.log(`🔗 [${Platform.OS}] Servidor: ${url} (${USE_LOCAL ? 'LOCAL' : 'PRODUCCIÓN'})`);
   return url;
 };
 
@@ -78,7 +82,11 @@ luminaApi.interceptors.response.use(
                 console.error('⏱️ Timeout: La petición tardó más de 60 segundos');
             } else if (error.message === 'Network Error') {
                 console.error('🌐 Error de red: Verifica la conexión al servidor');
-                console.error(`   Servidor: ${PRODUCTION_URL}`);
+                console.error(`   URL intentada: ${USE_LOCAL ? LOCAL_URL : PRODUCTION_URL}`);
+                if (USE_LOCAL) {
+                    console.error('   💡 Asegúrate de que el servidor Laravel esté corriendo:');
+                    console.error('      php artisan serve --host=0.0.0.0 --port=8000');
+                }
             }
         }
         

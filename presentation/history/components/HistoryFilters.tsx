@@ -9,15 +9,22 @@ import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
 interface HistoryFiltersProps {
   selectedDate: string | null
   onDateChange: (date: string | null) => void
+  dateRange: { start: string | null; end: string | null }
+  onDateRangeChange: (range: { start: string | null; end: string | null }) => void
 }
 
 export const HistoryFilters: React.FC<HistoryFiltersProps> = ({
   selectedDate,
   onDateChange,
+  dateRange,
+  onDateRangeChange,
 }) => {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const [showDatePicker, setShowDatePicker] = useState(false)
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false)
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false)
+  const [filterMode, setFilterMode] = useState<'single' | 'range'>('single')
 
   const formatDisplayDate = (dateString: string) => {
     // Parsear la fecha correctamente para evitar problemas de zona horaria
@@ -56,6 +63,49 @@ export const HistoryFilters: React.FC<HistoryFiltersProps> = ({
 
   const handleClearFilter = () => {
     onDateChange(null)
+    onDateRangeChange({ start: null, end: null })
+  }
+
+  const handleToggleMode = () => {
+    const newMode = filterMode === 'single' ? 'range' : 'single'
+    setFilterMode(newMode)
+    // Limpiar filtros al cambiar modo
+    onDateChange(null)
+    onDateRangeChange({ start: null, end: null })
+  }
+
+  const handleStartDateChange = (event: any, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowStartDatePicker(false)
+    }
+    
+    if (event.type === 'set' && date) {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const dateString = `${year}-${month}-${day}`
+      
+      onDateRangeChange({ ...dateRange, start: dateString })
+    } else if (event.type === 'dismissed') {
+      setShowStartDatePicker(false)
+    }
+  }
+
+  const handleEndDateChange = (event: any, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowEndDatePicker(false)
+    }
+    
+    if (event.type === 'set' && date) {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const dateString = `${year}-${month}-${day}`
+      
+      onDateRangeChange({ ...dateRange, end: dateString })
+    } else if (event.type === 'dismissed') {
+      setShowEndDatePicker(false)
+    }
   }
 
   const handleOpenPicker = () => {
@@ -64,12 +114,29 @@ export const HistoryFilters: React.FC<HistoryFiltersProps> = ({
 
   const getSelectedDateObject = () => {
     if (selectedDate) {
-      // Parsear la fecha en formato YYYY-MM-DD para evitar problemas de zona horaria
       const [year, month, day] = selectedDate.split('-').map(Number)
       return new Date(year, month - 1, day)
     }
     return new Date()
   }
+
+  const getStartDateObject = () => {
+    if (dateRange.start) {
+      const [year, month, day] = dateRange.start.split('-').map(Number)
+      return new Date(year, month - 1, day)
+    }
+    return new Date()
+  }
+
+  const getEndDateObject = () => {
+    if (dateRange.end) {
+      const [year, month, day] = dateRange.end.split('-').map(Number)
+      return new Date(year, month - 1, day)
+    }
+    return new Date()
+  }
+
+  const hasActiveFilter = selectedDate || dateRange.start || dateRange.end
 
   return (
     <View style={styles.container}>
@@ -77,7 +144,7 @@ export const HistoryFilters: React.FC<HistoryFiltersProps> = ({
         <ThemedText type="h3" style={styles.title}>
           Filtrar por fecha
         </ThemedText>
-        {selectedDate && (
+        {hasActiveFilter && (
           <TouchableOpacity 
             onPress={handleClearFilter}
             style={[styles.clearButton, { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -90,41 +157,193 @@ export const HistoryFilters: React.FC<HistoryFiltersProps> = ({
         )}
       </View>
 
-      <View style={styles.filterContent}>
+      {/* Toggle entre fecha única y rango */}
+      <View style={styles.modeSelector}>
         <TouchableOpacity
           style={[
-            styles.dateButton,
-            {
-              backgroundColor: selectedDate ? colors.primary : colors.card,
-              borderColor: selectedDate ? colors.primary : colors.border,
+            styles.modeButton,
+            filterMode === 'single' && styles.modeButtonActive,
+            { 
+              backgroundColor: filterMode === 'single' ? colors.primary : colors.card,
+              borderColor: colors.border 
             }
           ]}
-          onPress={handleOpenPicker}
+          onPress={handleToggleMode}
         >
-          <Ionicons
-            name="calendar-outline"
-            size={20}
-            color={selectedDate ? 'white' : colors.text}
+          <Ionicons 
+            name="calendar-outline" 
+            size={18} 
+            color={filterMode === 'single' ? 'white' : colors.text} 
           />
-          <ThemedText
-            type="body2"
+          <ThemedText 
+            type="body2" 
             style={[
-              styles.dateButtonText,
-              { color: selectedDate ? 'white' : colors.text }
+              styles.modeButtonText,
+              { color: filterMode === 'single' ? 'white' : colors.text }
             ]}
           >
-            {selectedDate ? formatDisplayDate(selectedDate) : 'Seleccionar fecha'}
+            Día específico
+          </ThemedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.modeButton,
+            filterMode === 'range' && styles.modeButtonActive,
+            { 
+              backgroundColor: filterMode === 'range' ? colors.primary : colors.card,
+              borderColor: colors.border 
+            }
+          ]}
+          onPress={handleToggleMode}
+        >
+          <Ionicons 
+            name="calendar-number-outline" 
+            size={18} 
+            color={filterMode === 'range' ? 'white' : colors.text} 
+          />
+          <ThemedText 
+            type="body2" 
+            style={[
+              styles.modeButtonText,
+              { color: filterMode === 'range' ? 'white' : colors.text }
+            ]}
+          >
+            Rango de fechas
           </ThemedText>
         </TouchableOpacity>
       </View>
 
-      {/* DateTimePicker */}
+      {/* Filtro por día específico */}
+      {filterMode === 'single' && (
+        <View style={styles.filterContent}>
+          <TouchableOpacity
+            style={[
+              styles.dateButton,
+              {
+                backgroundColor: selectedDate ? colors.primary : colors.card,
+                borderColor: selectedDate ? colors.primary : colors.border,
+              }
+            ]}
+            onPress={handleOpenPicker}
+          >
+            <Ionicons
+              name="calendar-outline"
+              size={20}
+              color={selectedDate ? 'white' : colors.text}
+            />
+            <ThemedText
+              type="body2"
+              style={[
+                styles.dateButtonText,
+                { color: selectedDate ? 'white' : colors.text }
+              ]}
+            >
+              {selectedDate ? formatDisplayDate(selectedDate) : 'Seleccionar fecha'}
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Filtro por rango de fechas */}
+      {filterMode === 'range' && (
+        <View style={styles.filterContent}>
+          <View style={styles.rangeContainer}>
+            <ThemedText type="body2" style={styles.rangeLabel}>
+              Fecha inicio
+            </ThemedText>
+            <TouchableOpacity
+              style={[
+                styles.dateButton,
+                styles.rangeDateButton,
+                {
+                  backgroundColor: dateRange.start ? colors.primary : colors.card,
+                  borderColor: dateRange.start ? colors.primary : colors.border,
+                }
+              ]}
+              onPress={() => setShowStartDatePicker(true)}
+            >
+              <Ionicons
+                name="calendar-outline"
+                size={18}
+                color={dateRange.start ? 'white' : colors.text}
+              />
+              <ThemedText
+                type="body2"
+                style={[
+                  styles.dateButtonText,
+                  { color: dateRange.start ? 'white' : colors.text, fontSize: 13 }
+                ]}
+              >
+                {dateRange.start ? formatDisplayDate(dateRange.start) : 'Seleccionar'}
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.rangeContainer}>
+            <ThemedText type="body2" style={styles.rangeLabel}>
+              Fecha fin
+            </ThemedText>
+            <TouchableOpacity
+              style={[
+                styles.dateButton,
+                styles.rangeDateButton,
+                {
+                  backgroundColor: dateRange.end ? colors.primary : colors.card,
+                  borderColor: dateRange.end ? colors.primary : colors.border,
+                }
+              ]}
+              onPress={() => setShowEndDatePicker(true)}
+            >
+              <Ionicons
+                name="calendar-outline"
+                size={18}
+                color={dateRange.end ? 'white' : colors.text}
+              />
+              <ThemedText
+                type="body2"
+                style={[
+                  styles.dateButtonText,
+                  { color: dateRange.end ? 'white' : colors.text, fontSize: 13 }
+                ]}
+              >
+                {dateRange.end ? formatDisplayDate(dateRange.end) : 'Seleccionar'}
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* DateTimePickers */}
       {showDatePicker && (
         <DateTimePicker
           value={getSelectedDateObject()}
           mode="date"
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
+          maximumDate={new Date()}
+          themeVariant={colorScheme ?? 'light'}
+        />
+      )}
+
+      {showStartDatePicker && (
+        <DateTimePicker
+          value={getStartDateObject()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleStartDateChange}
+          maximumDate={dateRange.end ? getEndDateObject() : new Date()}
+          themeVariant={colorScheme ?? 'light'}
+        />
+      )}
+
+      {showEndDatePicker && (
+        <DateTimePicker
+          value={getEndDateObject()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleEndDateChange}
+          minimumDate={dateRange.start ? getStartDateObject() : undefined}
           maximumDate={new Date()}
           themeVariant={colorScheme ?? 'light'}
         />
@@ -161,8 +380,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Poppins-Medium',
   },
+  modeSelector: {
+    flexDirection: 'row',
+    gap: 10,
+    marginHorizontal: 20,
+    marginBottom: 12,
+  },
+  modeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  modeButtonActive: {
+    // Estilo adicional para botón activo si es necesario
+  },
+  modeButtonText: {
+    fontSize: 12,
+    fontFamily: 'Poppins-Medium',
+  },
   filterContent: {
     paddingHorizontal: 20,
+    gap: 12,
   },
   dateButton: {
     flexDirection: 'row',
@@ -177,5 +421,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Poppins-Medium',
     flex: 1,
+  },
+  rangeContainer: {
+    gap: 6,
+  },
+  rangeLabel: {
+    fontSize: 12,
+    fontFamily: 'Poppins-Medium',
+    marginLeft: 4,
+  },
+  rangeDateButton: {
+    // Estilo específico para botones de rango si es necesario
   },
 })

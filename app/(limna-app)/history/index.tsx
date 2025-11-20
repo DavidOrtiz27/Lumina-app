@@ -7,7 +7,7 @@ import {
 } from '@/presentation/history/components'
 import { useHistory } from '@/presentation/history/hooks/useHistory'
 import type { TabType } from '@/presentation/history/types'
-import { filterEntriesByDate, sortEntriesByDate } from '@/presentation/history/utils/filters'
+import { filterEntriesByDate, filterEntriesByDateRange, sortEntriesByDate } from '@/presentation/history/utils/filters'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { ThemedView } from '@/presentation/theme/components/themed-view'
 import React, { useMemo, useState } from 'react'
@@ -16,6 +16,10 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 const HistoryScreen = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [dateRange, setDateRange] = useState<{ start: string | null; end: string | null }>({ 
+    start: null, 
+    end: null 
+  })
   const [activeTab, setActiveTab] = useState<TabType>('ingreso')
 
   const { history, isLoading, isError, error, isEmpty, refresh } = useHistory()
@@ -23,6 +27,7 @@ const HistoryScreen = () => {
   const filteredEntries = useMemo(() => {
     console.log('🔄 Recalculando filtros...');
     console.log('📅 Fecha seleccionada:', selectedDate);
+    console.log('📅 Rango de fechas:', dateRange);
     console.log('📑 Tab activo:', activeTab);
     console.log('📊 Total de registros:', history.length);
     
@@ -30,7 +35,6 @@ const HistoryScreen = () => {
     
     // Filtrar por tab (ingreso/egreso)
     const tabFiltered = history.filter(entry => {
-      // Si está "en uso" (salida null) es ingreso, si tiene salida es egreso
       if (activeTab === 'ingreso') {
         return entry.salida === null
       } else {
@@ -40,8 +44,16 @@ const HistoryScreen = () => {
     
     console.log('📊 Después de filtro por tab:', tabFiltered.length);
     
-    // Filtrar por fecha específica
-    const dateFiltered = filterEntriesByDate(tabFiltered, selectedDate)
+    // Filtrar por fecha: día específico o rango
+    let dateFiltered = tabFiltered
+    
+    if (selectedDate) {
+      // Filtro por día específico
+      dateFiltered = filterEntriesByDate(tabFiltered, selectedDate)
+    } else if (dateRange.start || dateRange.end) {
+      // Filtro por rango de fechas
+      dateFiltered = filterEntriesByDateRange(tabFiltered, dateRange.start, dateRange.end)
+    }
     
     console.log('📊 Después de filtro por fecha:', dateFiltered.length);
     
@@ -50,7 +62,7 @@ const HistoryScreen = () => {
     console.log('✅ Resultados finales:', sorted.length);
     
     return sorted;
-  }, [history, selectedDate, activeTab])
+  }, [history, selectedDate, dateRange, activeTab])
 
   if (isLoading) {
     return (
@@ -104,6 +116,8 @@ const HistoryScreen = () => {
           <HistoryFilters
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
           />
           
           {isEmpty || filteredEntries.length === 0 ? (
