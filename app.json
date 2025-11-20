@@ -39,6 +39,14 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Permitir que $(PRODUCT_NAME) guarde el código QR en tu galería",
+          "savePhotosPermission": "Permitir que $(PRODUCT_NAME) guarde el código QR en tu galería",
+          "isAccessMediaLocationEnabled": true
+        }
       ]
     ],
     "experiments": {

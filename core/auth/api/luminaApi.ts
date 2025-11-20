@@ -3,9 +3,9 @@ import { Platform } from 'react-native';
 import { StorageAdapter } from '../storage/StorageAdapter';
 
 // 🔥 CONFIGURACIÓN DEL SERVIDOR
-const USE_LOCAL = false; // Cambia a true para usar servidor local
+const USE_LOCAL = true; // Cambia a true para usar servidor local
 
-const LOCAL_URL = 'http://10.0.2.2:8000'; // Para emulador Android (localhost)
+const LOCAL_URL = 'http://192.168.1.15:8000'; // Para emulador Android (localhost)
 const PRODUCTION_URL = 'https://lumina-testing.onrender.com'; // Servidor de producción
 
 // Función para obtener la URL base

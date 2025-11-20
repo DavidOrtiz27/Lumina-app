@@ -3,10 +3,18 @@ import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useEquipmentQR } from '@/presentation/equipment/hooks/useEquipmentQR'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { Ionicons } from '@expo/vector-icons'
-import React from 'react'
-import { ActivityIndicator, Image, StyleSheet, TouchableOpacity, View } from 'react-native'
+import React, { useState } from 'react'
+import { ActivityIndicator, Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
 import type { EquipmentData } from '../types'
+
+// Importar MediaLibrary de forma condicional para evitar errores en dev build
+let MediaLibrary: any = null
+try {
+  MediaLibrary = require('expo-media-library')
+} catch (e) {
+  console.log('⚠️ MediaLibrary no disponible en este build')
+}
 
 interface QRMainViewProps {
   equipmentData: EquipmentData
@@ -16,9 +24,18 @@ interface QRMainViewProps {
 export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInfo }) => {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
+  const [isDownloading, setIsDownloading] = useState(false)
   
   // Usar el hook para generar el QR con hash SHA-256
   const { qrContent, isGenerating, error } = useEquipmentQR(equipmentData)
+
+  const handleDownloadQR = () => {
+    Alert.alert(
+      'ℹ️ Guardar QR',
+      'Para guardar el código QR, toma una captura de pantalla.\n\nEn un futuro build de producción, podrás descargarlo directamente.',
+      [{ text: 'Entendido' }]
+    )
+  }
 
   return (
     <View style={styles.content}>
@@ -31,29 +48,54 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
         </ThemedText>
 
         <View style={[styles.qrContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {isGenerating || !qrContent ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={colors.primary} />
-              <ThemedText type="body2" style={styles.loadingText}>
-                Generando QR...
-              </ThemedText>
-            </View>
-          ) : error ? (
-            <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={48} color={colors.destructive} />
-              <ThemedText type="body2" style={[styles.errorText, { color: colors.destructive }]}>
-                {error}
-              </ThemedText>
-            </View>
-          ) : (
-            <QRCode
-              value={qrContent || 'Loading...'}
-              size={240}
-              color={colors.text}
-              backgroundColor={colors.card}
-            />
-          )}
-        </View>
+            {isGenerating || !qrContent ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <ThemedText type="body2" style={styles.loadingText}>
+                  Generando QR...
+                </ThemedText>
+              </View>
+            ) : error ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={48} color={colors.destructive} />
+                <ThemedText type="body2" style={[styles.errorText, { color: colors.destructive }]}>
+                  {error}
+                </ThemedText>
+              </View>
+            ) : (
+              <QRCode
+                value={qrContent || 'Loading...'}
+                size={240}
+                color={colors.text}
+                backgroundColor={colors.card}
+              />
+            )}
+          </View>
+
+        {/* Botón de descarga */}
+        {!isGenerating && !error && qrContent && (
+          <TouchableOpacity
+            style={[styles.downloadButton, { backgroundColor: colors.primary }]}
+            onPress={handleDownloadQR}
+            disabled={isDownloading}
+          >
+            {isDownloading ? (
+              <>
+                <ActivityIndicator size="small" color="white" />
+                <ThemedText type="body2" style={styles.downloadButtonText}>
+                  Guardando...
+                </ThemedText>
+              </>
+            ) : (
+              <>
+                <Ionicons name="download-outline" size={20} color="white" />
+                <ThemedText type="body2" style={styles.downloadButtonText}>
+                  Guardar QR
+                </ThemedText>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.equipmentSection}>
@@ -245,5 +287,25 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-SemiBold',
     fontSize: 16,
     marginRight: 8,
+  },
+  downloadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginTop: 16,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    gap: 8,
+  },
+  downloadButtonText: {
+    color: 'white',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 14,
   },
 })
