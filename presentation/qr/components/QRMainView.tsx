@@ -4,16 +4,19 @@ import { useEquipmentQR } from '@/presentation/equipment/hooks/useEquipmentQR'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useState } from 'react'
-import { ActivityIndicator, Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
 import type { EquipmentData } from '../types'
 
-// Importar MediaLibrary de forma condicional para evitar errores en dev build
+// Importar de forma condicional para evitar errores en dev build
 let MediaLibrary: any = null
+let FileSystem: any = null
 try {
   MediaLibrary = require('expo-media-library')
+  // Usar la API legacy de FileSystem
+  FileSystem = require('expo-file-system/legacy')
 } catch (e) {
-  console.log('⚠️ MediaLibrary no disponible en este build')
+  console.log('⚠️ Módulos nativos no disponibles en este build')
 }
 
 interface QRMainViewProps {
@@ -25,20 +28,86 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const [isDownloading, setIsDownloading] = useState(false)
+  const qrCodeRef = React.useRef<any>(null)
   
   // Usar el hook para generar el QR con hash SHA-256
   const { qrContent, isGenerating, error } = useEquipmentQR(equipmentData)
 
-  const handleDownloadQR = () => {
-    Alert.alert(
-      'ℹ️ Guardar QR',
-      'Para guardar el código QR, toma una captura de pantalla.\n\nEn un futuro build de producción, podrás descargarlo directamente.',
-      [{ text: 'Entendido' }]
-    )
+  const handleDownloadQR = async () => {
+    if (!qrCodeRef.current || !qrContent) return
+
+    // Verificar si los módulos están disponibles
+    if (!MediaLibrary || !FileSystem) {
+      Alert.alert(
+        'ℹ️ Guardar QR',
+        'Para guardar el código QR, toma una captura de pantalla.\n\nEsta función requiere un build nativo.',
+        [{ text: 'Entendido' }]
+      )
+      return
+    }
+
+    try {
+      setIsDownloading(true)
+
+      // Solicitar permisos
+      const { status } = await MediaLibrary.requestPermissionsAsync()
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permiso requerido',
+          'Necesitamos permiso para guardar imágenes en tu galería',
+          [{ text: 'OK' }]
+        )
+        return
+      }
+
+      // Obtener el data URL del QR usando el método toDataURL del componente
+      qrCodeRef.current.toDataURL(async (dataURL: string) => {
+        try {
+          // Crear un nombre de archivo único
+          const fileName = `QR_${equipmentData.sn_equipo}_${Date.now()}.png`
+          const fileUri = FileSystem.cacheDirectory + fileName
+
+          // Convertir base64 a archivo
+          const base64Data = dataURL.replace('data:image/png;base64,', '')
+          await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+            encoding: 'base64'
+          })
+
+          // Guardar en la galería
+          const asset = await MediaLibrary.createAssetAsync(fileUri)
+          
+          // Intentar crear álbum
+          try {
+            await MediaLibrary.createAlbumAsync('Lumina QR', asset, false)
+          } catch {
+            // Ya está en galería principal
+          }
+
+          Alert.alert(
+            'QR Guardado',
+            'El código QR se ha guardado en tu galería',
+            [{ text: 'OK' }]
+          )
+        } catch (err) {
+          console.error('Error al guardar:', err)
+          Alert.alert('❌ Error', 'No se pudo guardar el QR', [{ text: 'OK' }])
+        } finally {
+          setIsDownloading(false)
+        }
+      })
+    } catch (err) {
+      console.error('Error al solicitar permisos:', err)
+      Alert.alert('❌ Error', 'No se pudo guardar el QR', [{ text: 'OK' }])
+      setIsDownloading(false)
+    }
   }
 
   return (
-    <View style={styles.content}>
+    <ScrollView 
+      style={styles.content}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.qrSection}>
         <ThemedText type="h2" style={styles.title}>
           {equipmentData.tipo_elemento}
@@ -64,10 +133,12 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
               </View>
             ) : (
               <QRCode
+                ref={qrCodeRef}
                 value={qrContent || 'Loading...'}
                 size={240}
                 color={colors.text}
                 backgroundColor={colors.card}
+                getRef={(ref) => (qrCodeRef.current = ref)}
               />
             )}
           </View>
@@ -165,21 +236,24 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
           />
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
   content: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
+    paddingBottom: 10,
   },
   qrSection: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 10,
   },
   title: {
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Poppins-SemiBold',
     fontSize: 24,
     textAlign: 'center',
     marginBottom: 8,
@@ -188,7 +262,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 10,
     opacity: 0.7,
   },
   qrContainer: {
@@ -224,7 +298,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   equipmentSection: {
-    flex: 1,
+    marginBottom: 20,
   },
   equipmentCard: {
     flexDirection: 'row',

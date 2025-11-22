@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useThemeColor } from '../../../hooks/use-theme-color'
 import { useAuthStore } from '../../auth/store/useAuthStore'
 import { useDrawer } from '../hooks/useDrawer'
@@ -43,62 +44,73 @@ export const CustomDrawerContent = () => {
   const navigateToSettings = () => navigateToScreen('/(limna-app)/settings/')
 
   return (
-    <View style={[styles.container, { backgroundColor }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: borderColor }]}>
-        <View style={styles.avatarContainer}>
-          <View style={[styles.avatar, { backgroundColor: '#6366F1' }]}>
-            <Ionicons name="person" size={30} color="white" />
+    <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top', 'bottom']}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={[styles.header, { borderBottomColor: borderColor }]}>
+          <View style={styles.avatarContainer}>
+            <View style={[styles.avatar, { backgroundColor: '#6366F1' }]}>
+              <Ionicons name="person" size={30} color="white" />
+            </View>
           </View>
+          <Text style={[styles.userName, { color: textColor }]}>
+            {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}
+          </Text>
+          <Text style={[styles.userEmail, { color: textColor }]}>
+            {user?.email || 'usuario@email.com'}
+          </Text>
+          <Text style={[styles.userType, { color: textColor }]}>
+            {user?.role?.nombre_rol || 'Usuario'}
+          </Text>
         </View>
-        <Text style={[styles.userName, { color: textColor }]}>
-          {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}
-        </Text>
-        <Text style={[styles.userEmail, { color: textColor }]}>
-          {user?.email || 'usuario@email.com'}
-        </Text>
-        <Text style={[styles.userType, { color: textColor }]}>
-          {user?.role?.nombre_rol || 'Usuario'}
-        </Text>
-      </View>
 
-      {/* Menu Items */}
-      <View style={styles.menuContainer}>
-        <MenuItem
-          icon="home-outline"
-          title="Inicio"
-          onPress={navigateToHome}
-          textColor={textColor}
-        />
-        <MenuItem
-          icon="time-outline"
-          title="Historial"
-          onPress={navigateToHistory}
-          textColor={textColor}
-        />
-        <MenuItem
-          icon="settings-outline"
-          title="Configuración"
-          onPress={navigateToSettings}
-          textColor={textColor}
-        />
-      </View>
+        {/* Menu Items */}
+        <View style={styles.menuContainer}>
+          <MenuItem
+            icon="home-outline"
+            title="Inicio"
+            onPress={navigateToHome}
+            textColor={textColor}
+          />
+          <MenuItem
+            icon="time-outline"
+            title="Historial"
+            onPress={navigateToHistory}
+            textColor={textColor}
+          />
+          <MenuItem
+            icon="settings-outline"
+            title="Configuración"
+            onPress={navigateToSettings}
+            textColor={textColor}
+          />
+        </View>
 
-      {/* Logout Button */}
-      <View style={[styles.footer, { borderTopColor: borderColor }]}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#FF6B6B" />
-          <Text style={styles.logoutText}>Cerrar Sesión</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+        {/* Logout Button */}
+        <View style={[styles.footer, { borderTopColor: borderColor }]}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={24} color="#FF6B6B" />
+            <Text style={styles.logoutText}>Cerrar Sesión</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 50,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   header: {
     padding: 20,

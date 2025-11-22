@@ -20,7 +20,7 @@ export const sendRecoveryCode = async (email: string): Promise<{ success: true }
       };
     }
 
-    const response = await luminaApi.post('/auth/recovery/send-code', {
+    const response = await luminaApi.post('/password/forgot', {
       email
     });
 
@@ -80,15 +80,15 @@ export const verifyRecoveryCode = async (email: string, code: string): Promise<{
       };
     }
 
-    const response = await luminaApi.post('/auth/recovery/verify-code', {
+    const response = await luminaApi.post('/password/verify-code', {
       email,
       code: code.toUpperCase()
     });
 
-    if (response.status === 200 && response.data.token) {
+    if (response.status === 200 && response.data?.data?.reset_token) {
       return { 
         success: true, 
-        token: response.data.token 
+        token: response.data.data.reset_token 
       };
     }
 
@@ -127,7 +127,11 @@ export const verifyRecoveryCode = async (email: string, code: string): Promise<{
 };
 
 // Reset de contraseña con token
-export const resetPassword = async (token: string, newPassword: string): Promise<{ success: true } | RecoveryError> => {
+export const resetPassword = async (
+  token: string,
+  newPassword: string,
+  email: string
+): Promise<{ success: true; message: string } | RecoveryError> => {
   try {
     if (!newPassword || newPassword.length < 8) {
       return {
@@ -136,42 +140,45 @@ export const resetPassword = async (token: string, newPassword: string): Promise
         field: 'password'
       };
     }
-
-    const response = await luminaApi.post('/auth/recovery/reset-password', {
-      token,
-      newPassword
-    });
-
-    if (response.status === 200) {
-      return { success: true };
+    if (!email) {
+      return {
+        type: 'validation',
+        message: 'Falta el email',
+        field: 'email'
+      };
     }
-
+    const response = await luminaApi.post('/password/reset', {
+      email,
+      reset_token: token,
+      password: newPassword,
+      password_confirmation: newPassword
+    });
+    if (response.status === 200 && response.data?.success) {
+      return { success: true, message: response.data.message };
+    }
     return {
       type: 'server',
       message: 'Error del servidor. Intenta más tarde.'
     };
-    
   } catch (error: any) {
     if (error.response) {
       if (error.response.status === 400) {
         return {
           type: 'validation',
-          message: 'Token inválido o expirado. Solicita un nuevo código',
+          message: error.response.data?.message || 'Token inválido o expirado. Solicita un nuevo código',
         };
       }
       return {
         type: 'server',
-        message: 'Error del servidor. Intenta más tarde.'
+        message: error.response.data?.message || 'Error del servidor. Intenta más tarde.'
       };
     }
-    
     if (error.code === 'NETWORK_ERROR' || !error.response) {
       return {
         type: 'network',
         message: 'Error de conexión. Verifica tu internet.'
       };
     }
-
     return {
       type: 'unknown',
       message: 'Ocurrió un error inesperado. Intenta de nuevo.'

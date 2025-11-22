@@ -67,8 +67,8 @@ const HistoryScreen = () => {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <ThemedView style={styles.container}>
-          <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+          <ThemedView style={styles.container}>
             <HistoryHeader title="Historial" />
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" />
@@ -76,8 +76,8 @@ const HistoryScreen = () => {
                 Cargando historial...
               </ThemedText>
             </View>
-          </SafeAreaView>
-        </ThemedView>
+          </ThemedView>
+        </SafeAreaView>
       </ProtectedRoute>
     )
   }
@@ -85,8 +85,8 @@ const HistoryScreen = () => {
   if (isError) {
     return (
       <ProtectedRoute>
-        <ThemedView style={styles.container}>
-          <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+          <ThemedView style={styles.container}>
             <HistoryHeader title="Historial" />
             <View style={styles.errorContainer}>
               <ThemedText style={styles.errorText}>
@@ -96,16 +96,16 @@ const HistoryScreen = () => {
                 {typeof error === 'string' ? error : 'Intenta nuevamente más tarde'}
               </ThemedText>
             </View>
-          </SafeAreaView>
-        </ThemedView>
+          </ThemedView>
+        </SafeAreaView>
       </ProtectedRoute>
     )
   }
 
   return (
     <ProtectedRoute>
-      <ThemedView style={styles.container}>
-        <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <ThemedView style={styles.container}>
           <HistoryHeader title="Historial" />
           
           <HistoryTabs
@@ -135,8 +135,8 @@ const HistoryScreen = () => {
           ) : (
             <HistoryList entries={filteredEntries} />
           )}
-        </SafeAreaView>
-      </ThemedView>
+        </ThemedView>
+      </SafeAreaView>
     </ProtectedRoute>
   )
 }

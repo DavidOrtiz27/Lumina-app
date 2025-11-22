@@ -56,8 +56,8 @@ const QRScreen = () => {
 
   return (
     <ProtectedRoute>
-      <ThemedView style={styles.container}>
-        <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+        <ThemedView style={styles.container}>
           {/* Header con botón del menú */}
           <View style={[styles.topHeader, { backgroundColor: colors.primary }]}>
             <TouchableOpacity 
@@ -83,8 +83,8 @@ const QRScreen = () => {
               onBack={() => setCurrentView('main')}
             />
           )}
-        </SafeAreaView>
-      </ThemedView>
+        </ThemedView>
+      </SafeAreaView>
     </ProtectedRoute>
   )
 }

@@ -52,13 +52,17 @@ export const HistoryList: React.FC<HistoryListProps> = ({
       ListHeaderComponent={renderHeader}
       ListEmptyComponent={renderEmptyComponent}
       contentContainerStyle={styles.listContent}
+      style={styles.list}
     />
   )
 }
 
 const styles = StyleSheet.create({
+  list: {
+    flex: 1,
+  },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   headerContainer: {
     paddingHorizontal: 20,

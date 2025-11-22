@@ -118,22 +118,14 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
             
             <View style={styles.detailsContent}>
               {equipmentData.elementos_adicionales.map((elemento, index) => (
-                <View key={elemento.id} style={styles.elementoAdicionalContainer}>
+                <View key={elemento.id}>
                   <View style={styles.elementoHeader}>
                     <Ionicons name="cube-outline" size={20} color={colors.primary} />
                     <ThemedText type="body1" style={[styles.elementoTitle, { color: colors.text }]}>
                       {elemento.nombre_elemento}
                     </ThemedText>
                   </View>
-                  
-                  <View style={styles.elementoImageContainer}>
-                    <Image
-                      source={{ uri: elemento.path_foto_elemento }}
-                      style={styles.elementoImage}
-                      resizeMode="cover"
-                    />
-                  </View>
-                  
+                
                   {index < equipmentData.elementos_adicionales.length - 1 && (
                     <View style={[styles.elementoDivider, { backgroundColor: colors.border }]} />
                   )}
@@ -163,7 +155,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.1)',
-    marginBottom: 25,
+    marginBottom: -10,
     minHeight: 50,
   },
   backButton: {
@@ -178,8 +170,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Medium',
     fontSize: 13,
   },
+  
   detailsTitle: {
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Poppins-SemiBold',
     fontSize: 16,
     textAlign: 'center',
     flex: 1,
@@ -210,7 +203,6 @@ const styles = StyleSheet.create({
   },
   detailsImageSection: {
     alignItems: 'center',
-    paddingVertical: 20,
     marginBottom: 25,
   },
   imageSectionTitle: {
@@ -251,36 +243,24 @@ const styles = StyleSheet.create({
     minWidth: 60,
   },
   equipmentValue: {
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: 'Poppins',
     fontSize: 14,
     flex: 1,
   },
-  elementoAdicionalContainer: {
-    marginVertical: 8,
-  },
+
   elementoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   elementoTitle: {
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: 'Poppins',
     fontSize: 15,
     marginLeft: 8,
     flex: 1,
   },
-  elementoImageContainer: {
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  elementoImage: {
-    width: 140,
-    height: 140,
-    borderRadius: 12,
-    backgroundColor: '#F3F4F6',
-  },
+
   elementoDivider: {
     height: 1,
-    marginVertical: 12,
   },
 })
