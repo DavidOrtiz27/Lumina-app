@@ -1,9 +1,9 @@
 import { ProtectedRoute } from '@/presentation/auth/components'
 import {
-  HistoryFilters,
-  HistoryHeader,
-  HistoryList,
-  HistoryTabs
+    HistoryFilters,
+    HistoryHeader,
+    HistoryList,
+    HistoryTabs
 } from '@/presentation/history/components'
 import { useHistory } from '@/presentation/history/hooks/useHistory'
 import type { TabType } from '@/presentation/history/types'
@@ -41,26 +41,19 @@ const HistoryScreen = () => {
         return entry.salida !== null
       }
     })
-    
-    console.log('📊 Después de filtro por tab:', tabFiltered.length);
-    
+
+    // Determinar campo de fecha a filtrar
+    const dateField = activeTab === 'ingreso' ? 'ingreso' : 'salida';
+
     // Filtrar por fecha: día específico o rango
     let dateFiltered = tabFiltered
-    
     if (selectedDate) {
-      // Filtro por día específico
-      dateFiltered = filterEntriesByDate(tabFiltered, selectedDate)
+      dateFiltered = filterEntriesByDate(tabFiltered, selectedDate, dateField)
     } else if (dateRange.start || dateRange.end) {
-      // Filtro por rango de fechas
-      dateFiltered = filterEntriesByDateRange(tabFiltered, dateRange.start, dateRange.end)
+      dateFiltered = filterEntriesByDateRange(tabFiltered, dateRange.start, dateRange.end, dateField)
     }
-    
-    console.log('📊 Después de filtro por fecha:', dateFiltered.length);
-    
-    const sorted = sortEntriesByDate(dateFiltered);
-    
-    console.log('✅ Resultados finales:', sorted.length);
-    
+
+    const sorted = sortEntriesByDate(dateFiltered, dateField);
     return sorted;
   }, [history, selectedDate, dateRange, activeTab])
 

@@ -210,6 +210,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     marginBottom: 20,
+    marginTop: 20,
   },
   detailsImageCard: {
     padding: 20,

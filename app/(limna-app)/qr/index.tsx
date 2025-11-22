@@ -117,6 +117,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: 'Poppins-Bold',
     fontSize: 20,
+    
   },
 })
 

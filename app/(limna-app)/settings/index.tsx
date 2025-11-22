@@ -132,13 +132,6 @@ const SettingsScreen = () => {
                 Preferencias
               </ThemedText>
 
-              <SettingItem
-                icon="notifications"
-                title="Notificaciones"
-                description="Recibir notificaciones de la aplicación"
-                value={notifications}
-                onValueChange={handleNotificationChange}
-              />
 
               {/* Selector de Tema Personalizado */}
               <View style={[styles.settingItem, { backgroundColor: colors.card, borderColor: colors.border }]}>

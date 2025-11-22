@@ -5,42 +5,22 @@ import type { HistoryEntry } from '../types';
  * Compara solo la parte de fecha (YYYY-MM-DD), ignorando la hora
  */
 export const filterEntriesByDate = (
-  entries: HistoryEntry[], 
-  selectedDate: string | null
+  entries: HistoryEntry[],
+  selectedDate: string | null,
+  field: 'ingreso' | 'salida' = 'ingreso'
 ): HistoryEntry[] => {
   if (!selectedDate) {
     return entries
   }
-
-  console.log('🔍 Filtrando por fecha:', selectedDate);
-  console.log('📊 Total de entradas antes de filtrar:', entries.length);
-
   const filtered = entries.filter(entry => {
-    if (!entry.ingreso || typeof entry.ingreso !== 'string') {
-      console.log('⚠️ Entrada sin fecha válida:', entry);
-      return false;
-    }
-    
-    const entryDate = new Date(entry.ingreso);
-    
-    if (isNaN(entryDate.getTime())) {
-      console.log('⚠️ Formato de fecha inválido:', entry.ingreso);
-      return false;
-    }
-    
+    const dateValue = entry[field];
+    if (!dateValue || typeof dateValue !== 'string') return false;
+    const entryDate = new Date(dateValue);
+    if (isNaN(entryDate.getTime())) return false;
     const entryDateStr = entryDate.toISOString().split('T')[0];
     const filterDate = selectedDate.trim();
-    
-    const matches = entryDateStr === filterDate;
-    
-    if (matches) {
-      console.log('✅ Coincide:', entry.ingreso, '→', entryDateStr, '===', filterDate);
-    }
-    
-    return matches;
+    return entryDateStr === filterDate;
   });
-
-  console.log('📊 Total de entradas después de filtrar:', filtered.length);
   return filtered;
 }
 
@@ -52,53 +32,32 @@ export const filterEntriesByDate = (
 export const filterEntriesByDateRange = (
   entries: HistoryEntry[],
   startDate: string | null,
-  endDate: string | null
+  endDate: string | null,
+  field: 'ingreso' | 'salida' = 'ingreso'
 ): HistoryEntry[] => {
   if (!startDate && !endDate) {
     return entries
   }
-
-  console.log('🔍 Filtrando por rango:', startDate, '-', endDate);
-  console.log('📊 Total de entradas antes de filtrar:', entries.length);
-
   const filtered = entries.filter(entry => {
-    if (!entry.ingreso || typeof entry.ingreso !== 'string') {
-      return false;
-    }
-    
-    const entryDate = new Date(entry.ingreso);
-    
-    if (isNaN(entryDate.getTime())) {
-      return false;
-    }
-    
+    const dateValue = entry[field];
+    if (!dateValue || typeof dateValue !== 'string') return false;
+    const entryDate = new Date(dateValue);
+    if (isNaN(entryDate.getTime())) return false;
     const entryDateStr = entryDate.toISOString().split('T')[0];
-    
-    // Si hay fecha inicio, la entrada debe ser >= startDate
-    if (startDate && entryDateStr < startDate) {
-      return false;
-    }
-    
-    // Si hay fecha fin, la entrada debe ser <= endDate
-    if (endDate && entryDateStr > endDate) {
-      return false;
-    }
-    
+    if (startDate && entryDateStr < startDate) return false;
+    if (endDate && entryDateStr > endDate) return false;
     return true;
   });
-
-  console.log('📊 Total de entradas después de filtrar:', filtered.length);
   return filtered;
 }
 
 /**
  * Ordena entradas por fecha de ingreso (más recientes primero)
  */
-export const sortEntriesByDate = (entries: HistoryEntry[]): HistoryEntry[] => {
+export const sortEntriesByDate = (entries: HistoryEntry[], field: 'ingreso' | 'salida' = 'ingreso'): HistoryEntry[] => {
   return [...entries].sort((a, b) => {
-    // Ordenar por fecha de ingreso (más recientes primero)
-    const dateA = new Date(a.ingreso)
-    const dateB = new Date(b.ingreso)
+    const dateA = new Date(a[field] || '')
+    const dateB = new Date(b[field] || '')
     return dateB.getTime() - dateA.getTime()
   })
 }
