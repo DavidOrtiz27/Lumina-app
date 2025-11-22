@@ -125,8 +125,6 @@ Password: password123
 
 ### **📅 Próximas Funcionalidades**
 - [ ] Integración con backend real
-- [ ] Push notifications
-- [ ] Sincronización offline
 - [ ] Pruebas unitarias
 
 ---

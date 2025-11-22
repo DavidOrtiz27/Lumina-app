@@ -1,6 +1,6 @@
-import { create } from "zustand";
+import { getEquipmentById, getMyEquipments, type EquipmentError } from "@/core/equipment/actions/equipment-actions";
 import { Equipment } from "@/core/equipment/interface/equipment";
-import { getMyEquipments, getEquipmentById, type EquipmentError } from "@/core/equipment/actions/equipment-actions";
+import { create } from "zustand";
 
 export type EquipmentStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -15,6 +15,7 @@ export interface EquipmentState {
     selectEquipment: (id: string) => Promise<void>;
     clearSelectedEquipment: () => void;
     refreshEquipments: () => Promise<void>;
+    clearEquipments: () => void;
 }
 
 export const useEquipmentStore = create<EquipmentState>()((set, get) => ({
@@ -27,22 +28,22 @@ export const useEquipmentStore = create<EquipmentState>()((set, get) => ({
     // Load all user equipments
     loadEquipments: async () => {
         set({ status: 'loading', error: undefined });
-        
+
         const result = await getMyEquipments();
-        
+
         // Check if result is an error
         if ('type' in result) {
-            set({ 
-                status: 'error', 
+            set({
+                status: 'error',
                 error: result,
                 equipments: []
             });
             return;
         }
-        
+
         // Success - result is Equipment[]
-        set({ 
-            status: 'success', 
+        set({
+            status: 'success',
             equipments: result,
             error: undefined
         });
@@ -51,22 +52,22 @@ export const useEquipmentStore = create<EquipmentState>()((set, get) => ({
     // Select a specific equipment by ID
     selectEquipment: async (id: string) => {
         set({ status: 'loading', error: undefined });
-        
+
         const result = await getEquipmentById(id);
-        
+
         // Check if result is an error
         if ('type' in result) {
-            set({ 
-                status: 'error', 
+            set({
+                status: 'error',
                 error: result,
                 selectedEquipment: undefined
             });
             return;
         }
-        
+
         // Success - result is Equipment
-        set({ 
-            status: 'success', 
+        set({
+            status: 'success',
             selectedEquipment: result,
             error: undefined
         });
@@ -81,4 +82,13 @@ export const useEquipmentStore = create<EquipmentState>()((set, get) => ({
     refreshEquipments: async () => {
         await get().loadEquipments();
     },
+
+    clearEquipments: () => {
+        set({
+            equipments: [],
+            selectedEquipment: undefined,
+            status: 'idle',
+            error: undefined
+        });
+    }
 }));
