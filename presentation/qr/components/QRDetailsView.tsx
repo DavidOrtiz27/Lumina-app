@@ -1,10 +1,12 @@
-import { Colors } from '@/constants/theme'
-import { useColorScheme } from '@/hooks/use-color-scheme'
-import { ThemedText } from '@/presentation/theme/components/themed-text'
-import { Ionicons } from '@expo/vector-icons'
-import React from 'react'
-import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
-import type { EquipmentData } from '../types'
+import { Colors } from '@/constants/theme';
+import { getImageUrl } from '@/core/auth/api/imageUrl';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ForceLoadImage } from '@/presentation/shared/components/ForceLoadImage';
+import { ThemedText } from '@/presentation/theme/components/themed-text';
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import type { EquipmentData } from '../types';
 
 interface QRDetailsViewProps {
   equipmentData: EquipmentData
@@ -15,11 +17,26 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
 
+  // Loggear el objeto completo antes de calcular la URL de la imagen
+  console.log('[DEBUG] equipmentData en QRDetailsView:', equipmentData);
+  let fullImageUrl = undefined;
+  if (equipmentData.path_foto_equipo_implemento) {
+    if (equipmentData.path_foto_equipo_implemento.startsWith('http')) {
+      fullImageUrl = equipmentData.path_foto_equipo_implemento;
+      console.log('[QRDetailsView] Usando URL directa:', fullImageUrl);
+    } else {
+      fullImageUrl = getImageUrl(equipmentData.path_foto_equipo_implemento);
+      console.log('[QRDetailsView] Mostrando imagen de equipo:', fullImageUrl);
+    }
+  } else {
+    console.log('[QRDetailsView] Equipo sin imagen:', equipmentData.sn_equipo);
+  }
+
   return (
     <View style={styles.content}>
       <ScrollView style={styles.detailsSection} showsVerticalScrollIndicator={false}>
         <View style={styles.detailsHeader}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={onBack}
           >
@@ -28,25 +45,41 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
               Volver
             </ThemedText>
           </TouchableOpacity>
-          
+
           <ThemedText type="h3" style={[styles.detailsTitle, { color: colors.text }]}>
             Información Detallada
           </ThemedText>
-          
+
           <View style={styles.headerSpacer} />
         </View>
 
         {/* Imagen del Equipo en Vista Detallada */}
         <View style={styles.detailsImageSection}>
           <ThemedText type="h3" style={[styles.imageSectionTitle, { color: colors.text }]}>
-            {equipmentData.tipo_elemento}
+            {equipmentData.tipo_elemento || 'Sin tipo'}
           </ThemedText>
           <View style={[styles.detailsImageCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Image
-              source={{ uri: equipmentData.path_foto_equipo_implemento }}
-              style={styles.detailsEquipmentImage}
-              resizeMode="cover"
-            />
+            {fullImageUrl ? (
+                <ForceLoadImage
+                  uri={fullImageUrl}
+                  style={styles.detailsEquipmentImage}
+                  resizeMode="cover"
+                  onError={e => {
+                    console.log('[QRDetailsView] Error cargando imagen:', e);
+                    console.log('[QRDetailsView] URL que falló:', fullImageUrl);
+                  }}
+                  onLoad={() => console.log('[QRDetailsView] ✅ Imagen cargada exitosamente')}
+                  fallback={
+                    <View style={[styles.detailsEquipmentImage, styles.noImagePlaceholder]}>
+                      <ThemedText style={{ fontSize: 12 }}>No Image</ThemedText>
+                    </View>
+                  }
+                />
+            ) : (
+              <View style={[styles.detailsEquipmentImage, styles.noImagePlaceholder]}>
+                <ThemedText style={{ fontSize: 12 }}>No Image</ThemedText>
+              </View>
+            )}
           </View>
         </View>
 
@@ -55,7 +88,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
           <ThemedText type="h3" style={[styles.sectionTitle, { color: colors.text }]}>
             Información del Equipo
           </ThemedText>
-          
+
           <View style={styles.detailsContent}>
             <View style={styles.equipmentRow}>
               <Ionicons name="hardware-chip" size={20} color={colors.primary} />
@@ -63,7 +96,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
                 Tipo:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.tipo_elemento}
+                {equipmentData.tipo_elemento || 'Sin tipo'}
               </ThemedText>
             </View>
 
@@ -73,7 +106,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
                 Marca:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.marca}
+                {equipmentData.marca || 'Sin marca'}
               </ThemedText>
             </View>
 
@@ -83,7 +116,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
                 Color:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.color}
+                {equipmentData.color || 'Sin color'}
               </ThemedText>
             </View>
 
@@ -93,7 +126,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
                 N° Serial:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.sn_equipo}
+                {equipmentData.sn_equipo || 'N/A'}
               </ThemedText>
             </View>
 
@@ -103,7 +136,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
                 Descripción:
               </ThemedText>
               <ThemedText type="body1" style={[styles.equipmentValue, { flex: 1, flexWrap: 'wrap' }]}>
-                {equipmentData.descripcion}
+                {equipmentData.descripcion || 'Sin descripción'}
               </ThemedText>
             </View>
           </View>
@@ -115,7 +148,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
             <ThemedText type="h3" style={[styles.sectionTitle, { color: colors.text }]}>
               Elementos Adicionales ({equipmentData.elementos_adicionales.length})
             </ThemedText>
-            
+
             <View style={styles.detailsContent}>
               {equipmentData.elementos_adicionales.map((elemento, index) => (
                 <View key={elemento.id}>
@@ -125,7 +158,7 @@ export const QRDetailsView: React.FC<QRDetailsViewProps> = ({ equipmentData, onB
                       {elemento.nombre_elemento}
                     </ThemedText>
                   </View>
-                
+
                   {index < equipmentData.elementos_adicionales.length - 1 && (
                     <View style={[styles.elementoDivider, { backgroundColor: colors.border }]} />
                   )}
@@ -170,7 +203,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Medium',
     fontSize: 13,
   },
-  
+
   detailsTitle: {
     fontFamily: 'Poppins-SemiBold',
     fontSize: 16,
@@ -229,6 +262,14 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 16,
     backgroundColor: '#F3F4F6',
+  },
+  noImagePlaceholder: {
+    backgroundColor: '#E0E0E0', // Light grey background
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#CCC',
+    borderStyle: 'dashed',
   },
   equipmentRow: {
     flexDirection: 'row',

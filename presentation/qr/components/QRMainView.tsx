@@ -1,12 +1,13 @@
-import { Colors } from '@/constants/theme'
-import { useColorScheme } from '@/hooks/use-color-scheme'
-import { useEquipmentQR } from '@/presentation/equipment/hooks/useEquipmentQR'
-import { ThemedText } from '@/presentation/theme/components/themed-text'
-import { Ionicons } from '@expo/vector-icons'
-import React, { useState } from 'react'
-import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
-import QRCode from 'react-native-qrcode-svg'
-import type { EquipmentData } from '../types'
+import { Colors } from '@/constants/theme';
+import { getImageUrl } from '@/core/auth/api/imageUrl'; // Import getImageUrl
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ForceLoadImage } from '@/presentation/shared/components/ForceLoadImage'; // Import ForceLoadImage
+import { ThemedText } from '@/presentation/theme/components/themed-text';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
+import type { EquipmentData } from '../types';
 
 // Importar de forma condicional para evitar errores en dev build
 let MediaLibrary: any = null
@@ -29,12 +30,24 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
   const colors = Colors[colorScheme ?? 'light']
   const [isDownloading, setIsDownloading] = useState(false)
   const qrCodeRef = React.useRef<any>(null)
-  
-  // Usar el hook para generar el QR con hash SHA-256
-  const { qrContent, isGenerating, error } = useEquipmentQR(equipmentData)
+
+  // Loggear el objeto completo antes de calcular la URL de la imagen
+  console.log('[DEBUG] equipmentData en QRMainView:', equipmentData);
+  let fullImageUrl = undefined;
+  if (equipmentData.path_foto_equipo_implemento) {
+    if (equipmentData.path_foto_equipo_implemento.startsWith('http')) {
+      fullImageUrl = equipmentData.path_foto_equipo_implemento;
+      console.log('[QRMainView] Usando URL directa:', fullImageUrl);
+    } else {
+      fullImageUrl = getImageUrl(equipmentData.path_foto_equipo_implemento);
+      console.log('[QRMainView] Mostrando imagen de equipo:', fullImageUrl);
+    }
+  } else {
+    console.log('[QRMainView] Equipo sin imagen:', equipmentData.sn_equipo);
+  }
 
   const handleDownloadQR = async () => {
-    if (!qrCodeRef.current || !qrContent) return
+    if (!qrCodeRef.current || !equipmentData.qr_hash) return
 
     // Verificar si los módulos están disponibles
     if (!MediaLibrary || !FileSystem) {
@@ -75,7 +88,7 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
 
           // Guardar en la galería
           const asset = await MediaLibrary.createAssetAsync(fileUri)
-          
+
           // Intentar crear álbum
           try {
             await MediaLibrary.createAlbumAsync('Lumina QR', asset, false)
@@ -103,80 +116,87 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
   }
 
   return (
-    <ScrollView 
+    <ScrollView
       style={styles.content}
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.qrSection}>
         <ThemedText type="h2" style={styles.title}>
-          {equipmentData.tipo_elemento}
+          {equipmentData.tipo_elemento || 'Sin tipo'}
         </ThemedText>
         <ThemedText type="body1" style={styles.subtitle}>
           Código QR del Equipo
         </ThemedText>
 
         <View style={[styles.qrContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            {isGenerating || !qrContent ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={colors.primary} />
-                <ThemedText type="body2" style={styles.loadingText}>
-                  Generando QR...
-                </ThemedText>
-              </View>
-            ) : error ? (
-              <View style={styles.errorContainer}>
-                <Ionicons name="alert-circle" size={48} color={colors.destructive} />
-                <ThemedText type="body2" style={[styles.errorText, { color: colors.destructive }]}>
-                  {error}
-                </ThemedText>
-              </View>
-            ) : (
-              <QRCode
-                ref={qrCodeRef}
-                value={qrContent || 'Loading...'}
-                size={240}
-                color={colors.text}
-                backgroundColor={colors.card}
-                getRef={(ref) => (qrCodeRef.current = ref)}
-              />
-            )}
-          </View>
+          {!equipmentData.qr_hash ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <ThemedText type="body2" style={styles.loadingText}>
+                Generando QR...
+              </ThemedText>
+            </View>
+          ) : (
+            <QRCode
+              ref={qrCodeRef}
+              value={equipmentData.qr_hash}
+              size={240}
+              color={colors.text}
+              backgroundColor={colors.card}
+              getRef={(ref) => (qrCodeRef.current = ref)}
+            />
+          )}
+        </View>
 
         {/* Botón de descarga */}
-        {!isGenerating && !error && qrContent && (
-          <TouchableOpacity
-            style={[styles.downloadButton, { backgroundColor: colors.primary }]}
-            onPress={handleDownloadQR}
-            disabled={isDownloading}
-          >
-            {isDownloading ? (
-              <>
-                <ActivityIndicator size="small" color="white" />
-                <ThemedText type="body2" style={styles.downloadButtonText}>
-                  Guardando...
-                </ThemedText>
-              </>
-            ) : (
-              <>
-                <Ionicons name="download-outline" size={20} color="white" />
-                <ThemedText type="body2" style={styles.downloadButtonText}>
-                  Guardar QR
-                </ThemedText>
-              </>
-            )}
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[styles.downloadButton, { backgroundColor: colors.primary }]}
+          onPress={handleDownloadQR}
+          disabled={isDownloading}
+        >
+          {isDownloading ? (
+            <>
+              <ActivityIndicator size="small" color="white" />
+              <ThemedText type="body2" style={styles.downloadButtonText}>
+                Guardando...
+              </ThemedText>
+            </>
+          ) : (
+            <>
+              <Ionicons name="download-outline" size={20} color="white" />
+              <ThemedText type="body2" style={styles.downloadButtonText}>
+                Guardar QR
+              </ThemedText>
+            </>
+          )}
+        </TouchableOpacity>
       </View>
 
       <View style={styles.equipmentSection}>
         <View style={[styles.equipmentCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.equipmentImageContainer}>
-            <Image
-              source={{ uri: equipmentData.path_foto_equipo_implemento }}
-              style={styles.equipmentImage}
-              resizeMode="cover"
-            />
+            {fullImageUrl ? (
+              <ForceLoadImage
+                uri={fullImageUrl}
+                style={styles.equipmentImage}
+                resizeMode="cover"
+                onError={e => {
+                  console.log('[QRMainView] Error cargando imagen:', e);
+                  console.log('[QRMainView] URL que falló:', fullImageUrl);
+                }}
+                onLoad={() => console.log('[QRMainView] ✅ Imagen cargada exitosamente')}
+                fallback={
+                  <View style={[styles.equipmentImage, styles.noImagePlaceholder]}>
+                    <ThemedText style={{fontSize: 10}}>No Image</ThemedText>
+                  </View>
+                }
+              />
+            ) : (
+              <View style={[styles.equipmentImage, styles.noImagePlaceholder]}>
+                <ThemedText style={{fontSize: 10}}>No Image</ThemedText>
+              </View>
+            )}
           </View>
 
           <View style={styles.equipmentDetails}>
@@ -186,7 +206,7 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
                 Tipo:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.tipo_elemento}
+                {equipmentData.tipo_elemento || 'Sin tipo'}
               </ThemedText>
             </View>
 
@@ -196,7 +216,7 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
                 Marca:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.marca}
+                {equipmentData.marca || 'Sin marca'}
               </ThemedText>
             </View>
 
@@ -206,7 +226,7 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
                 Color:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.color}
+                {equipmentData.color || 'Sin color'}
               </ThemedText>
             </View>
 
@@ -216,23 +236,23 @@ export const QRMainView: React.FC<QRMainViewProps> = ({ equipmentData, onMoreInf
                 N° Serial:
               </ThemedText>
               <ThemedText type="body1" style={styles.equipmentValue}>
-                {equipmentData.sn_equipo}
+                {equipmentData.sn_equipo || 'N/A'}
               </ThemedText>
             </View>
           </View>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.moreInfoButton, { backgroundColor: colors.primary }]}
           onPress={onMoreInfo}
         >
           <ThemedText type="body1" style={styles.moreInfoButtonText}>
             Más información
           </ThemedText>
-          <Ionicons 
-            name="chevron-forward" 
-            size={20} 
-            color="white" 
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color="white"
           />
         </TouchableOpacity>
       </View>
@@ -320,6 +340,14 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 12,
     backgroundColor: '#F3F4F6',
+  },
+  noImagePlaceholder: {
+    backgroundColor: '#E0E0E0', // Light grey background
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#CCC',
+    borderStyle: 'dashed',
   },
   equipmentDetails: {
     flex: 1,

@@ -7,17 +7,17 @@ export interface ElementoAdicional {
 
 export interface Equipment {
   id: number;
-  sn_equipo: string;
-  marca: string;
-  color: string;
-  tipo_elemento: string;
-  descripcion: string;
-  qr_hash: string;
-  path_foto_equipo_implemento: string;
+  sn_equipo: string | null;
+  marca: string | null;
+  color: string | null;
+  tipo_elemento: string | null;
+  descripcion: string | null;
+  qr_hash: string | null;
+  path_foto_equipo_implemento: string | null;
   elementos_adicionales: ElementoAdicional[];
 }
 
-export interface EquipmentQR{
+export interface EquipmentQR {
   sn_equipo: string;
   color: string;
 }

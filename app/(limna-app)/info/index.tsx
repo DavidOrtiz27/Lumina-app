@@ -1,8 +1,10 @@
 import { Colors } from '@/constants/theme'
+import { getImageUrl } from '@/core/auth/api/imageUrl'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { ProtectedRoute } from '@/presentation/auth/components'
 import { useAuthStore } from '@/presentation/auth/store/useAuthStore'
 import { useDrawer } from '@/presentation/navigation/hooks/useDrawer'
+import { ForceLoadImage } from '@/presentation/shared/components/ForceLoadImage'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { ThemedView } from '@/presentation/theme/components/themed-view'
 import { Ionicons } from '@expo/vector-icons'
@@ -43,9 +45,38 @@ const InfoScreen = () => {
             {/* Profile Header */}
             <View style={[styles.profileHeader, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={styles.avatarSection}>
-                <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
-                  <Ionicons name="person" size={40} color="white" />
-                </View>
+                {(() => {
+                  if (user?.path_foto) {
+                    let url = user.path_foto;
+                    if (!url.startsWith('http')) {
+                      url = getImageUrl(url);
+                    }
+                    console.log('[INFO] Mostrando foto de usuario:', url);
+                    return (
+                      <ForceLoadImage
+                        uri={url}
+                        style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}
+                        resizeMode="cover"
+                        onError={e => {
+                          console.log('[INFO] Error cargando foto de perfil:', e);
+                        }}
+                        onLoad={() => console.log('[INFO] ✅ Foto de perfil cargada')}
+                        fallback={
+                          <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}> 
+                            <Ionicons name="person" size={40} color="white" />
+                          </View>
+                        }
+                      />
+                    );
+                  } else {
+                    console.log('[INFO] Usuario sin path_foto, mostrando ícono por defecto');
+                    return (
+                      <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}> 
+                        <Ionicons name="person" size={40} color="white" />
+                      </View>
+                    );
+                  }
+                })()}
                 <View style={styles.profileInfo}>
                   <ThemedText type="h3" style={styles.fullName}>
                     {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}

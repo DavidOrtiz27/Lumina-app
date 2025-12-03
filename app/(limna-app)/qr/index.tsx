@@ -7,7 +7,7 @@ import type { EquipmentData, QRViewType } from '@/presentation/qr/types'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { ThemedView } from '@/presentation/theme/components/themed-view'
 import { Ionicons } from '@expo/vector-icons'
-import { useLocalSearchParams } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import React, { useState } from 'react'
 import { StyleSheet, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -69,7 +69,12 @@ const QRScreen = () => {
             <ThemedText type="h2" style={styles.headerTitle}>
               Mi QR
             </ThemedText>
-            <View style={styles.menuButton} />
+            <TouchableOpacity 
+              style={styles.homeButton} 
+              onPress={() => router.push('/(limna-app)/(home)/' as any)}
+            >
+              <Ionicons name="home-outline" size={24} color="white" />
+            </TouchableOpacity>
           </View>
 
           {currentView === 'main' ? (
@@ -109,6 +114,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   menuButton: {
+    padding: 8,
+    width: 44,
+    alignItems: 'center',
+  },
+  homeButton: {
     padding: 8,
     width: 44,
     alignItems: 'center',

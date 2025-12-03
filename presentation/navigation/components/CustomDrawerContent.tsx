@@ -1,11 +1,13 @@
-import { Ionicons } from '@expo/vector-icons'
-import { router } from 'expo-router'
-import React from 'react'
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { useThemeColor } from '../../../hooks/use-theme-color'
-import { useAuthStore } from '../../auth/store/useAuthStore'
-import { useDrawer } from '../hooks/useDrawer'
+import { getImageUrl } from '@/core/auth/api/imageUrl';
+import { ForceLoadImage } from '@/presentation/shared/components/ForceLoadImage';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeColor } from '../../../hooks/use-theme-color';
+import { useAuthStore } from '../../auth/store/useAuthStore';
+import { useDrawer } from '../hooks/useDrawer';
 
 interface MenuItemProps {
   icon: keyof typeof Ionicons.glyphMap
@@ -53,9 +55,42 @@ export const CustomDrawerContent = () => {
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: borderColor }]}>
           <View style={styles.avatarContainer}>
-            <View style={[styles.avatar, { backgroundColor: '#6366F1' }]}>
-              <Ionicons name="person" size={30} color="white" />
-            </View>
+            {(() => {
+              console.log('[DRAWER] Usuario completo:', JSON.stringify(user, null, 2));
+              console.log('[DRAWER] path_foto:', user?.path_foto);
+              
+              if (user?.path_foto) {
+                let url = user.path_foto;
+                if (!url.startsWith('http')) {
+                  url = getImageUrl(url);
+                }
+                console.log('[DRAWER] Mostrando foto de usuario:', url);
+                return (
+                  <ForceLoadImage
+                    uri={url}
+                    style={styles.avatar}
+                    resizeMode="cover"
+                    onError={e => {
+                      console.log('[DRAWER] Error cargando foto de perfil:', e);
+                      console.log('[DRAWER] URL que falló:', url);
+                    }}
+                    onLoad={() => console.log('[DRAWER] ✅ Foto de perfil cargada exitosamente')}
+                    fallback={
+                      <View style={[styles.avatar, { backgroundColor: '#6366F1' }]}> 
+                        <Ionicons name="person" size={30} color="white" />
+                      </View>
+                    }
+                  />
+                );
+              } else {
+                console.log('[DRAWER] Usuario sin path_foto, mostrando ícono por defecto');
+                return (
+                  <View style={[styles.avatar, { backgroundColor: '#6366F1' }]}> 
+                    <Ionicons name="person" size={30} color="white" />
+                  </View>
+                );
+              }
+            })()}
           </View>
           <Text style={[styles.userName, { color: textColor }]}>
             {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}

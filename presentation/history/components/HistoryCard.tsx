@@ -1,9 +1,11 @@
 import { Colors } from '@/constants/theme'
+import { getImageUrl } from '@/core/auth/api/imageUrl'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { ForceLoadImage } from '@/presentation/shared/components/ForceLoadImage'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { Ionicons } from '@expo/vector-icons'
-import React from 'react'
-import { Image, StyleSheet, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
 import type { HistoryEntry } from '../types'
 
 interface HistoryCardProps {
@@ -13,6 +15,18 @@ interface HistoryCardProps {
 export const HistoryCard: React.FC<HistoryCardProps> = ({ entry }) => {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
+
+  const [authenticatedEquipoImageUrl, setAuthenticatedEquipoImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (entry.equipo.path_foto_equipo_implemento) {
+      const fullUrl = getImageUrl(entry.equipo.path_foto_equipo_implemento);
+      console.log('[HistoryCard] URL imagen equipo:', fullUrl);
+      setAuthenticatedEquipoImageUrl(fullUrl);
+    } else {
+      setAuthenticatedEquipoImageUrl(null);
+    }
+  }, [entry.equipo.path_foto_equipo_implemento]);
 
   const formatDateTime = (dateTimeString: string) => {
     const date = new Date(dateTimeString)
@@ -51,18 +65,24 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({ entry }) => {
           color="white" 
         />
         <ThemedText style={styles.statusText}>
-          {isInUse ? 'En uso' : 'Devuelto'}
+          {isInUse ? 'En uso' : 'Retirado'}
         </ThemedText>
       </View>
 
       {/* Información del equipo */}
       <View style={styles.equipmentSection}>
         <View style={styles.equipmentImageContainer}>
-          <Image
-            source={{ uri: entry.equipo.path_foto_equipo_implemento }}
-            style={styles.equipmentImage}
-            resizeMode="cover"
-          />
+          {authenticatedEquipoImageUrl ? (
+            <ForceLoadImage
+              uri={authenticatedEquipoImageUrl}
+              style={styles.equipmentImage}
+              resizeMode="cover"
+              onError={(e) => console.log('[HistoryCard] Error cargando imagen equipo:', e)}
+              onLoad={() => console.log('[HistoryCard] ✅ Imagen equipo cargada')}
+            />
+          ) : (
+            <View style={[styles.equipmentImage, { backgroundColor: '#E0E0E0' }]} />
+          )}
         </View>
         
         <View style={styles.equipmentInfo}>
@@ -144,6 +164,9 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({ entry }) => {
             {entry.equipo.elementos_adicionales.map((elemento) => (
               <View key={elemento.id} style={styles.additionalItem}>
                 <Ionicons name="checkmark" size={12} color={colors.primary} />
+                {elemento.path_foto_elemento ? (
+                  <AuthenticatedItemImage filename={elemento.path_foto_elemento} />
+                ) : null}
                 <ThemedText type="body2" style={styles.additionalText}>
                   {elemento.nombre_elemento}
                 </ThemedText>
@@ -155,6 +178,23 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({ entry }) => {
     </View>
   )
 }
+
+// AuthenticatedItemImage component for additional items
+const AuthenticatedItemImage: React.FC<{ filename: string }> = ({ filename }) => {
+  if (!filename) return null;
+  const uri = getImageUrl(filename);
+  console.log('[HistoryCard] URL imagen elemento:', uri);
+
+  return (
+    <ForceLoadImage
+      uri={uri}
+      style={{ width: 32, height: 32, borderRadius: 6, marginRight: 8 }}
+      resizeMode="cover"
+      onError={e => console.log('[HistoryCard] Error cargando imagen elemento:', e)}
+      onLoad={() => console.log('[HistoryCard] ✅ Imagen elemento cargada')}
+    />
+  );
+};
 
 const styles = StyleSheet.create({
   card: {

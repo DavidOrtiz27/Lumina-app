@@ -10,7 +10,8 @@ import type { TabType } from '@/presentation/history/types'
 import { filterEntriesByDate, filterEntriesByDateRange, sortEntriesByDate } from '@/presentation/history/utils/filters'
 import { ThemedText } from '@/presentation/theme/components/themed-text'
 import { ThemedView } from '@/presentation/theme/components/themed-view'
-import React, { useMemo, useState } from 'react'
+import { useFocusEffect } from '@react-navigation/native'
+import React, { useCallback, useMemo, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -23,6 +24,21 @@ const HistoryScreen = () => {
   const [activeTab, setActiveTab] = useState<TabType>('ingreso')
 
   const { history, isLoading, isError, error, isEmpty, refresh } = useHistory()
+
+  // Recargar historial cuando la pantalla obtiene foco (navegación desde banner u otras pantallas)
+  useFocusEffect(
+    useCallback(() => {
+      console.log('📍 Pantalla de historial enfocada - recargando datos...');
+      refresh();
+    }, [refresh])
+  )
+
+  // Handler para cambio de tab que recarga los datos
+  const handleTabChange = useCallback((tab: TabType) => {
+    console.log('🔄 Cambiando tab a:', tab, '- recargando historial...');
+    setActiveTab(tab);
+    refresh();
+  }, [refresh])
 
   const filteredEntries = useMemo(() => {
     console.log('🔄 Recalculando filtros...');
@@ -103,7 +119,7 @@ const HistoryScreen = () => {
           
           <HistoryTabs
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
           />
           
           <HistoryFilters

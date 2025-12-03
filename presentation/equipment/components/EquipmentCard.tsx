@@ -1,10 +1,14 @@
-import { Equipment } from '@/core/equipment/interface/equipment'
-import { useThemeColor } from '@/hooks/use-theme-color'
-import { useEquipmentQR } from '@/presentation/equipment/hooks/useEquipmentQR'
-import { ThemedText } from '@/presentation/theme/components/themed-text'
-import React from 'react'
-import { ActivityIndicator, Image, StyleSheet, TouchableOpacity, View } from 'react-native'
-import QRCode from 'react-native-qrcode-svg'
+import { getImageUrl } from '@/core/auth/api/imageUrl'; // Import getImageUrl
+import { Equipment } from '@/core/equipment/interface/equipment'; // Import Equipment
+import { useThemeColor } from '@/hooks/use-theme-color'; // Import useThemeColor
+import { ForceLoadImage } from '@/presentation/shared/components/ForceLoadImage'; // Import ForceLoadImage
+import { ThemedText } from '@/presentation/theme/components/themed-text'; // Import ThemedText
+import React from 'react';
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
+
+// Imagen de fallback
+const fallbackImg = require('@/assets/images/icon.png');
 
 interface EquipmentCardProps {
   equipment: Equipment
@@ -15,45 +19,73 @@ export const EquipmentCard = ({ equipment, onPress }: EquipmentCardProps) => {
   const backgroundColor = useThemeColor({}, 'card')
   const borderColor = useThemeColor({}, 'border')
   const textColor = useThemeColor({}, 'text')
-  
-  // Usar el hook para generar el QR con hash SHA-256
-  const { qrContent, isGenerating } = useEquipmentQR(equipment)
+
+
+  let fullImageUrl = undefined;
+  if (equipment.path_foto_equipo_implemento) {
+    // Si ya es una URL completa, úsala directamente
+    if (equipment.path_foto_equipo_implemento.startsWith('http')) {
+      fullImageUrl = equipment.path_foto_equipo_implemento;
+      console.log('[EQUIPO] Usando URL directa:', fullImageUrl);
+    } else {
+      fullImageUrl = getImageUrl(equipment.path_foto_equipo_implemento);
+      console.log('[EQUIPO] Mostrando imagen de equipo:', fullImageUrl);
+    }
+  } else {
+    console.log('[EQUIPO] Equipo sin imagen:', equipment.sn_equipo);
+  }
 
   return (
-    <TouchableOpacity 
-      style={[styles.card, { backgroundColor, borderColor }]} 
+    <TouchableOpacity
+      style={[styles.card, { backgroundColor, borderColor }]}
       onPress={() => onPress(equipment)}
     >
       {/* Imagen del equipo - Izquierda */}
       <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: equipment.path_foto_equipo_implemento }}
-          style={styles.equipmentImage}
-          resizeMode="cover"
-        />
+          {fullImageUrl ? (
+            <ForceLoadImage
+              uri={fullImageUrl}
+              style={styles.equipmentImage}
+              resizeMode="cover"
+              onError={e => {
+                console.log('[EquipmentCard] Error cargando imagen:', e);
+                console.log('[EquipmentCard] URL que falló:', fullImageUrl);
+              }}
+              onLoad={() => console.log('[EquipmentCard] ✅ Imagen cargada exitosamente')}
+              fallback={
+                <View style={[styles.equipmentImage, { backgroundColor: '#E0E0E0', justifyContent: 'center', alignItems: 'center' }]}> 
+                  <ThemedText style={{fontSize: 10}}>No Image</ThemedText>
+                </View>
+              }
+            />
+          ) : (
+            <View style={[styles.equipmentImage, { backgroundColor: '#E0E0E0', justifyContent: 'center', alignItems: 'center' }]}> 
+              <ThemedText style={{fontSize: 10}}>No Image</ThemedText>
+            </View>
+          )}
       </View>
 
       {/* Información del equipo - Centro */}
       <View style={styles.infoContainer}>
         <ThemedText type="h4" style={[styles.equipmentName, { color: textColor }]}>
-          {equipment.tipo_elemento}
+          {equipment.tipo_elemento || 'Sin tipo'}
         </ThemedText>
         <ThemedText type="body2" style={[styles.equipmentBrand, { color: textColor, opacity: 0.8 }]}>
-          {equipment.marca} - {equipment.color}
+          {equipment.marca || 'Sin marca'} - {equipment.color || 'Sin color'}
         </ThemedText>
         <ThemedText type="body2" style={[styles.equipmentSerial, { color: textColor, opacity: 0.7 }]}>
-          SN: {equipment.sn_equipo}
+          SN: {equipment.sn_equipo || 'N/A'}
         </ThemedText>
       </View>
 
       {/* QR Code - Derecha */}
       <View style={styles.qrContainer}>
-        <View style={[styles.qrPlaceholder, { borderColor: textColor}]}>
-          {isGenerating || !qrContent ? (
+        <View style={[styles.qrPlaceholder, { borderColor: textColor }]}> 
+          {!equipment.qr_hash ? (
             <ActivityIndicator size="small" color={textColor} />
           ) : (
             <QRCode
-              value={qrContent || 'Loading...'}
+              value={equipment.qr_hash}
               size={60}
               color={textColor}
               backgroundColor={backgroundColor}
@@ -122,4 +154,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  noImagePlaceholder: {
+    backgroundColor: '#E0E0E0', // Light grey background
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#CCC',
+    borderStyle: 'dashed',
+  }
 })

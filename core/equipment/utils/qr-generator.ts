@@ -7,16 +7,15 @@ import type { Equipment, EquipmentQR } from '../interface/equipment';
  * Este hash se utilizará como contenido del código QR
  * 
  * @param equipment - Información del equipo (sn_equipo, color)
- * @param user - Información del usuario (nombre, documento)
  * @returns Hash SHA-256 en formato hexadecimal
  */
 export const generateEquipmentHash = async (equipment: EquipmentQR, user: userQR): Promise<string> => {
   try {
-    // Concatenar la información en un string
-    // Formato: sn_equipo|color|usuario_nombre|usuario_documento
+    // Concatenar información clave del equipo y usuario
+    // Formato: sn_equipo|color|nombre_usuario|documento_usuario
     const dataString = `${equipment.sn_equipo}|${equipment.color}|${user.nombre}|${user.documento}`;
 
-    console.log('🔐 Generando hash con usuario desde:', dataString);
+    console.log('🔐 Generando hash SHA-256 para QR de equipo/usuario desde:', dataString);
 
     // Generar hash SHA-256
     const hash = await Crypto.digestStringAsync(
@@ -24,12 +23,12 @@ export const generateEquipmentHash = async (equipment: EquipmentQR, user: userQR
       dataString
     );
 
-    console.log('✅ Hash con usuario generado:', hash);
+    console.log('✅ Hash de equipo/usuario generado:', hash);
 
     return hash;
   } catch (error) {
-    console.error('Error generando hash del equipo:', error);
-    throw new Error('No se pudo generar el hash del equipo');
+    console.error('Error generando hash de equipo/usuario:', error);
+    throw new Error('No se pudo generar el hash de equipo/usuario');
   }
 };
 
@@ -39,7 +38,6 @@ export const generateEquipmentHash = async (equipment: EquipmentQR, user: userQR
  * 
  * @param hash - Hash SHA-256 a verificar
  * @param equipment - Información del equipo (sn_equipo, color)
- * @param user - Información del usuario (nombre, documento)
  * @returns true si el hash coincide, false si no
  */
 export const verifyEquipmentHash = async (
@@ -158,47 +156,4 @@ export const parseQRData = (scannedData: string): {
   id: number;
   sn_equipo: string;
   tipo_elemento: string;
-  marca: string;
-  color: string;
-  hash: string;
-} | null => {
-  try {
-    const qrData = JSON.parse(scannedData);
-
-    // Verificar estructura básica
-    if (!qrData.version || !qrData.type || qrData.type !== 'equipment') {
-      return null;
-    }
-
-    return {
-      id: qrData.equipment.id,
-      sn_equipo: qrData.equipment.sn_equipo,
-      tipo_elemento: qrData.equipment.tipo_elemento,
-      marca: qrData.equipment.marca,
-      color: qrData.equipment.color,
-      hash: qrData.hash
-    };
-  } catch (error) {
-    console.error('Error parseando datos del QR:', error);
-    return null;
-  }
-};
-
-/**
- * Genera un hash simple para usar como fallback si falla la generación completa (sin ID)
- * 
- * @param equipment - Información completa del equipo
- * @returns Hash simple basado en concatenación básica
- */
-export const generateSimpleHash = (equipment: Equipment): string => {
-  // Concatenar información básica (sin ID)
-  const simpleData = `${equipment.sn_equipo}|${equipment.marca}|${equipment.tipo_elemento}`;
-  
-  // Hash simple usando btoa (base64) como fallback
-  try {
-    return btoa(simpleData);
-  } catch {
-    // Si btoa falla, devolver el string directo
-    return simpleData;
-  }
 };
