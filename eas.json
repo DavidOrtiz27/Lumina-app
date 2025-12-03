@@ -24,7 +24,7 @@
       "autoIncrement": true,
       "distribution": "store",
       "android": {
-        "buildType": "aab"
+        "buildType": "app-bundle"
       },
       "env": {
         "API_URL": "https://lumina-production.onrender.com"
